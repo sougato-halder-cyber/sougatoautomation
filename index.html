@@ -10,6 +10,7 @@
     <link rel="icon" type="image/png" sizes="512x512" href="icon-512.png" />
     <link rel="apple-touch-icon" sizes="180x180" href="icon-180.png" />
     <link rel="manifest" href="manifest.json" />
+    
     <link rel="preconnect" href="https://fonts.googleapis.com" />
     <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin />
     <link
@@ -969,6 +970,21 @@ tr.is-highlight > :last-child { box-shadow: 12px 0 var(--fill-tertiary); }
       .x-toast { position: fixed; z-index: 60; left: 50%; bottom: calc(env(safe-area-inset-bottom, 0px) + 96px); transform: translateX(-50%); max-width: calc(100% - 32px); padding: 10px 16px; border-radius: var(--r-pill); background: var(--fill-primary); color: var(--text-primary-on); font: var(--type-label); box-shadow: var(--hark-shadow); }
       .x-toast[hidden] { display: none; }
 
+      /* Jarvis voice control */
+      .x-jarvis { position: fixed; z-index: 40; right: 16px; bottom: calc(env(safe-area-inset-bottom, 0px) + 88px); display: grid; justify-items: center; gap: 4px; }
+      .x-jv-btn { display: grid; place-items: center; width: 56px; height: 56px; border: 0; border-radius: 50%; background: var(--fill-primary); color: var(--text-primary-on); box-shadow: var(--hark-shadow); cursor: pointer; transition: transform var(--dur-quick) var(--ease-out); }
+      .x-jv-btn svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
+      .x-jv-btn[aria-pressed="true"] { box-shadow: 0 0 0 4px var(--fill-primary-on), 0 0 0 6px var(--fill-system-green), var(--hark-shadow); }
+      .x-jv-btn:active { transform: scale(0.96); }
+      .x-jv-label { padding: 1px 8px; border-radius: var(--r-pill); background: var(--fill-primary-on); color: var(--text-primary); font: var(--type-caption); box-shadow: var(--hark-shadow); }
+      .x-jv-bubble { position: absolute; right: 68px; bottom: 18px; width: max-content; max-width: min(260px, calc(100vw - 100px)); padding: 10px 14px; border-radius: var(--r-m); background: var(--mat-regular); -webkit-backdrop-filter: var(--hark-blur); backdrop-filter: var(--hark-blur); border: 1px solid var(--stroke-secondary); box-shadow: var(--hark-shadow); font: var(--type-small); color: var(--text-primary); }
+      .x-jv-bubble[hidden] { display: none; }
+      .x-jv-bubble b { display: flex; align-items: center; gap: 6px; font: var(--type-caption); color: var(--text-secondary); margin-bottom: 2px; }
+      .x-jv-bubble b::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--fill-system-green); animation: x-jv-pulse 1s ease-in-out infinite; }
+      @keyframes x-jv-pulse { 50% { opacity: 0.3; } }
+      @media (min-width: 760px) { .x-jarvis { bottom: calc(env(safe-area-inset-bottom, 0px) + 24px); right: 24px; } }
+      @media (prefers-reduced-motion: reduce) { .x-jv-bubble b::before { animation: none; } .x-jv-btn { transition: none; } }
+
       /* Automation */
       .x-ai { display: grid; gap: 14px; padding: 22px; border-radius: var(--r-l); background: var(--fill-tertiary); transition: box-shadow var(--dur-draw) var(--ease-out); }
       .x-ai h3 { font: var(--type-title); }
@@ -1452,6 +1468,12 @@ tr.is-highlight > :last-child { box-shadow: 12px 0 var(--fill-tertiary); }
     </dialog>
 
     <p class="x-toast" id="toast" role="status" hidden></p>
+
+    <div class="x-jarvis">
+      <div class="x-jv-bubble" id="jv-bubble" aria-live="polite" hidden><b>Listening…</b><span id="jv-text">Say a command</span></div>
+      <button class="x-jv-btn" id="jv-btn" type="button" aria-pressed="false" aria-label="Jarvis voice control"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button>
+      <span class="x-jv-label" aria-hidden="true">Jarvis</span>
+    </div>
 
     <script type="application/json" id="views-data">
       {"youtube":[137,141,142,124,112,122,146,159,166,147,141,124,124,136,155,179,170,155,145,132,150,175,184,180,165,134,150,165],"rumble":[119,126,138,126,131,119,113,118,144,144,145,132,115,113,127,138,139,136,134,108,108,131,138,150,143,127,131,114],"instagram":[93,80,81,78,88,102,98,95,91,74,75,87,103,102,90,82,75,82,84,102,106,101,88,86,75,88,106,105],"facebook":[91,93,80,77,71,77,88,86,84,83,69,66,74,83,93,82,73,65,78,78,82,82,77,70,71,66,72,85]}
@@ -2515,6 +2537,113 @@ tr.is-highlight > :last-child { box-shadow: 12px 0 var(--fill-tertiary); }
           show("chat");
           var m = $("#msg"); m.value = "Should I post more Shorts or Long videos?"; m.focus();
         });
+
+        /* Jarvis voice control (preview) */
+        (function () {
+          var SR = window.SpeechRecognition || window.webkitSpeechRecognition;
+          var btn = $("#jv-btn"), bub = $("#jv-bubble"), txt = $("#jv-text"), rec = null, listening = false, bubT, qT = [];
+          var PREVIEW = "Preview only — to apply it for real, say it to Hark in the Hark app.";
+          function toasts(list) {
+            qT.forEach(clearTimeout); qT = [];
+            list.forEach(function (m, i) { qT.push(setTimeout(function () { toast(m); }, i * 2800)); });
+          }
+          function say(s) {
+            if (!("speechSynthesis" in window)) return;
+            speechSynthesis.cancel();
+            var u = new SpeechSynthesisUtterance(s); u.lang = "en-IN"; u.rate = 1;
+            speechSynthesis.speak(u);
+          }
+          function done(spoken, list) { say(spoken); toasts(list || [spoken]); }
+          function lev(a, b) {
+            var d = [], i, j;
+            for (i = 0; i <= a.length; i++) d[i] = [i];
+            for (j = 0; j <= b.length; j++) d[0][j] = j;
+            for (i = 1; i <= a.length; i++) for (j = 1; j <= b.length; j++)
+              d[i][j] = Math.min(d[i - 1][j] + 1, d[i][j - 1] + 1, d[i - 1][j - 1] + (a[i - 1] === b[j - 1] ? 0 : 1));
+            return d[a.length][b.length];
+          }
+          function setAuto(on) {
+            var m = $("#ai-master");
+            if ((m.getAttribute("aria-checked") === "true") !== on) m.click();
+            var chip = $("#scan-card .chip");
+            if (chip) { chip.textContent = on ? "Active" : "Paused"; chip.className = "chip" + (on ? " chip--solid" : ""); }
+          }
+          var tabs = { home: "home", channels: "channels", channel: "channels", automation: "automation", studio: "studio", schedule: "schedule", analyze: "analyze", analyse: "analyze", analytics: "analyze", chat: "chat",
+            "হোম": "home", "চ্যানেল": "channels", "অটোমেশন": "automation", "স্টুডিও": "studio", "শিডিউল": "schedule", "চ্যাট": "chat" };
+          var filler = /\b(open|go|to|show|the|tab|page|please|kholo|dekhao|jao|e)\b/g;
+          function findTab(t) {
+            var core = t.replace(filler, " ").replace(/\s+/g, " ").trim();
+            if (!core || core.split(" ").length > 2) return null;
+            if (tabs[core]) return tabs[core];
+            var best = null, bd = 9;
+            Object.keys(tabs).forEach(function (k) { var d = lev(core, k); if (d < bd) { bd = d; best = k; } });
+            return best && bd <= (best.length > 5 ? 2 : 1) ? tabs[best] : null;
+          }
+          function handle(raw) {
+            var t = raw.toLowerCase().replace(/[.,!?।]/g, " ").replace(/\s+/g, " ").trim();
+            t = t.replace(/^(hey|hi|ok|okay)?\s*(jarvis|jervis|javis)\s*/, "").trim();
+            if (!t) { done("Yes? I'm listening."); return; }
+            var has = function (re) { return re.test(t); };
+            var autoWord = has(/automat|অটোমেশন/);
+            if ((autoWord && has(/\b(off|pause|stop|band|bondho|bondo)\b/)) || has(/\b(bondho|bondo|bandho)\b|বন্ধ/)) {
+              setAuto(false); done("Okay, automation paused", ["Okay, automation paused", PREVIEW]); return;
+            }
+            if ((autoWord && has(/\b(on|start|resume|chalu|chaalu)\b/)) || has(/\b(chalu|chaalu)\b|চালু/)) {
+              setAuto(true); done("Okay, automation is on", ["Okay, automation is on", PREVIEW]); return;
+            }
+            if (has(/(more research|research koro|research karo|রিসার্চ)/)) {
+              setAuto(true); done("Okay, research is on", ["Research on: I'll dig deeper at the next scan", PREVIEW]); return;
+            }
+            if (has(/\b(upload|delete|remove)\b|ডিলিট|আপলোড/)) {
+              show("chat"); $("#msg").value = raw.trim();
+              done("Okay, I've put that in chat", ["Added to chat", PREVIEW]); return;
+            }
+            if (has(/\b(status|report|update)\b|স্ট্যাটাস|রিপোর্ট/)) {
+              var on = $("#ai-master").getAttribute("aria-checked") === "true";
+              var conn = accts.filter(function (a) { return a.on; }).length;
+              var wk = ($("#scan-card .x-quota p").textContent.match(/(\d+)\s*\/\s*(\d+)/) || [0, 0, 3]);
+              var next = ($("#cd-when").textContent || "9 AM or 9 PM IST").replace(":00", "");
+              done(conn + " of " + accts.length + " accounts connected. This week, " + wk[1] + " of " + wk[2] + " videos made. Automation is " + (on ? "on" : "off") + ". Next scan " + next + ".",
+                [conn + "/" + accts.length + " accounts · " + wk[1] + "/" + wk[2] + " videos this week · automation " + (on ? "on" : "off") + " · next scan " + next]);
+              return;
+            }
+            var tab = findTab(t);
+            if (tab) {
+              show(tab);
+              var name = tab.charAt(0).toUpperCase() + tab.slice(1);
+              done("Okay, opening " + name, ["Opened " + name]); return;
+            }
+            show("chat"); var m = $("#msg"); m.value = raw.trim(); m.focus();
+            done("Okay, I've put that in chat", ["Added to chat: tap Send to ask"]);
+          }
+          function stopUI() {
+            listening = false; btn.setAttribute("aria-pressed", "false");
+            clearTimeout(bubT); bubT = setTimeout(function () { bub.hidden = true; }, 1200);
+          }
+          btn.addEventListener("click", function () {
+            if (!SR) { toast("Voice isn't supported in this browser. Try Chrome or Samsung Internet."); return; }
+            if (listening && rec) { rec.stop(); return; }
+            rec = new SR(); rec.lang = "en-IN"; rec.interimResults = true; rec.continuous = false; rec.maxAlternatives = 1;
+            var final = "";
+            rec.onresult = function (e) {
+              var live = "";
+              for (var i = e.resultIndex; i < e.results.length; i++) {
+                if (e.results[i].isFinal) final += e.results[i][0].transcript; else live += e.results[i][0].transcript;
+              }
+              txt.textContent = (final + live).trim() || "Say a command";
+            };
+            rec.onerror = function (e) {
+              if (e.error === "not-allowed" || e.error === "service-not-allowed") toast("Allow microphone access to use Jarvis");
+              else if (e.error === "no-speech") toast("Didn't catch that. Tap Jarvis and try again");
+            };
+            rec.onend = function () { stopUI(); if (final.trim()) handle(final); };
+            try {
+              if ("speechSynthesis" in window) speechSynthesis.cancel();
+              rec.start(); listening = true; btn.setAttribute("aria-pressed", "true");
+              clearTimeout(bubT); txt.textContent = "Say a command"; bub.hidden = false;
+            } catch (err) { stopUI(); toast("Couldn't start the mic. Try again"); }
+          });
+        })();
 
         charts.home(); made.home = true;
       })();
