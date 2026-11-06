@@ -1295,7 +1295,7 @@ tr.is-highlight > :last-child { box-shadow: 12px 0 var(--fill-tertiary); }
             <button class="x-switch" role="switch" aria-checked="true"><span class="x-ic"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M3 15l5-5 4 4 3-3 6 6"/></svg></span><span class="x-grow">Thumbnails + A/B test<small>Two thumbnails per video, keeps the winner</small></span></button>
             <button class="x-switch" role="switch" aria-checked="true"><span class="x-ic"><svg viewBox="0 0 24 24"><rect x="3" y="5" width="18" height="14" rx="2"/><path d="M7 13h4M13 13h4M7 16h10"/></svg></span><span class="x-grow">Auto captions<small>In your chosen languages</small></span></button>
             <button class="x-switch" role="switch" aria-checked="true"><span class="x-ic"><svg viewBox="0 0 24 24"><rect x="7" y="2" width="10" height="20" rx="2"/><path d="M11 18h2"/></svg></span><span class="x-grow">Vertical reels for Instagram &amp; Facebook<small>Prepared once those accounts connect</small></span></button>
-            <button class="x-switch" role="switch" aria-checked="true"><span class="x-ic"><svg viewBox="0 0 24 24"><path d="M12 16V4M7 9l5-5 5 5M4 20h16"/></svg></span><span class="x-grow">Auto-publish to Rumble<small>Each AI-approved video, at the best US time · up to 3 a week</small></span></button>
+            <button class="x-switch" role="switch" aria-checked="true"><span class="x-ic"><svg viewBox="0 0 24 24"><path d="M12 16V4M7 9l5-5 5 5M4 20h16"/></svg></span><span class="x-grow">Auto-publish to Rumble<small>1 video a day at the best US time · extras on your yes</small></span></button>
             <button class="x-switch" role="switch" aria-checked="true"><span class="x-ic"><svg viewBox="0 0 24 24"><path d="M20 12a8 8 0 1 1-2.3-5.6M20 4v4h-4"/></svg></span><span class="x-grow">Analytics sync<small>Daily</small></span></button>
             <button class="x-switch" role="switch" aria-checked="true"><span class="x-ic"><svg viewBox="0 0 24 24"><path d="M4 20V10M10 20V4M16 20v-7M22 20H2"/></svg></span><span class="x-grow">Weekly growth report<small>What grew, what slowed, what to try</small></span></button>
             <button class="x-switch" role="switch" aria-checked="false"><span class="x-ic"><svg viewBox="0 0 24 24"><path d="M4 5h16v11H9l-5 4z"/></svg></span><span class="x-grow">Comment reply drafts<small>Drafts replies for you to send</small></span></button>
@@ -1479,7 +1479,7 @@ tr.is-highlight > :last-child { box-shadow: 12px 0 var(--fill-tertiary); }
         <p><span class="chip" id="sh-status">Connected</span> <span class="pill" id="sh-niche">Crypto &amp; finance, US</span></p>
         <div>
           <button class="x-switch" role="switch" aria-checked="true" id="sh-auto">Auto-pilot<small id="sh-auto-note">On: Hark makes and posts on schedule</small></button>
-          <div class="x-switch x-static"><span>Videos per week<small>Up to 3, Mon–Sun</small></span>
+          <div class="x-switch x-static"><span>Videos per week<small>1 a day, extras on your yes</small></span>
             <span class="x-stepper"><button type="button" id="st-minus" aria-label="Fewer">−</button><output id="st-val">3</output><button type="button" id="st-plus" aria-label="More">+</button></span>
           </div>
         </div>
@@ -1748,18 +1748,63 @@ tr.is-highlight > :last-child { box-shadow: 12px 0 var(--fill-tertiary); }
         /* Switches, radios, language chips */
         document.addEventListener("click", function (e) {
           var sw = e.target.closest(".x-switch[role=switch]");
-          if (sw && sw.id === "ai-master") { toast("Shows the real automation state. To change it, tell Hark in chat."); return; }
-          if (sw) sw.setAttribute("aria-checked", sw.getAttribute("aria-checked") === "true" ? "false" : "true");
+          if (sw && !sw.disabled) {
+            var nv = sw.getAttribute("aria-checked") === "true" ? "false" : "true";
+            sw.setAttribute("aria-checked", nv);
+            if (sw.id === "ai-master") setMaster(nv === "true");
+            if (sw.id !== "sh-auto") saveSet();
+          }
           var r = e.target.closest("[data-radio] [role=radio]");
           if (r) $$("[role=radio]", r.parentNode).forEach(function (o) { o.setAttribute("aria-checked", o === r ? "true" : "false"); });
         });
-        /* AI Intelligence master toggle: mirrors status.json "automation" */
+        /* Real switches: saved on this phone + sent to the automation (read at the start of every run) */
+        var CTL = "https://ntfy.sh/sougato-auto-ctl-b21f0f5177";
+        function swKey(el) {
+          if (el.id) return el.id;
+          var p = el.querySelector(".x-plat"), t = p ? p.textContent : "";
+          if (!t) { var g = el.querySelector(".x-grow"); t = g && g.firstChild ? g.firstChild.textContent : ""; }
+          if (!t) t = el.firstChild ? el.firstChild.textContent : el.textContent;
+          return String(t).trim().toLowerCase().replace(/[^a-z0-9]+/g, "-").replace(/^-|-$/g, "");
+        }
+        function realSwitches() { return $$(".x-switch[role=switch]").filter(function (el) { return !el.disabled && el.id !== "sh-auto"; }); }
+        var SET = { ts: 0, sw: {} };
+        try { var ls0 = JSON.parse(localStorage.getItem("sg-settings") || "null"); if (ls0 && ls0.sw) SET = ls0; } catch (e) {}
+        function applySet() {
+          realSwitches().forEach(function (el) { var k = swKey(el); if (k in SET.sw) el.setAttribute("aria-checked", SET.sw[k] ? "true" : "false"); });
+          if ("ai-master" in SET.sw) setMaster(!!SET.sw["ai-master"]);
+        }
+        function mergeSet(s) {
+          if (!s || !s.sw || (+s.ts || 0) <= (+SET.ts || 0)) return;
+          SET = { ts: +s.ts, sw: s.sw };
+          try { localStorage.setItem("sg-settings", JSON.stringify(SET)); } catch (e) {}
+          applySet();
+        }
+        function saveSet() {
+          var sw = {};
+          realSwitches().forEach(function (el) { sw[swKey(el)] = el.getAttribute("aria-checked") === "true"; });
+          SET = { ts: Date.now(), sw: sw };
+          try { localStorage.setItem("sg-settings", JSON.stringify(SET)); } catch (e) {}
+          if (!window.fetch) return;
+          fetch(CTL, { method: "POST", body: JSON.stringify(SET) })
+            .then(function (r) { toast(r.ok ? "Saved · the automation follows it from the next run" : "Saved on this phone only, try again"); })
+            .catch(function () { toast("Saved on this phone only, try again"); });
+        }
+        function pullSet() {
+          if (!window.fetch) return;
+          fetch(CTL + "/json?poll=1&since=12h").then(function (r) { return r.text(); }).then(function (t) {
+            var best = null;
+            t.split("\n").forEach(function (ln) { try { var m = JSON.parse(ln); if (m.event === "message") { var s = JSON.parse(m.message); if (s && s.sw && (!best || s.ts > best.ts)) best = s; } } catch (e) {} });
+            mergeSet(best);
+          }).catch(function () {});
+        }
+        /* AI Intelligence master toggle: your saved choice, else status.json "automation" */
         function setMaster(on) {
           var m = $("#ai-master");
           m.setAttribute("aria-checked", on === null ? "false" : on ? "true" : "false");
           $("#ai-card").classList.toggle("is-on", !!on);
-          $("#ai-status").textContent = on === null ? "Status unavailable here" : on ? "Active · automation on" : "Paused · automation off";
+          $("#ai-status").textContent = on === null ? "Status unavailable here" : on ? "Active · automation on" : "Paused · next runs skip everything";
         }
+        setTimeout(function () { try { applySet(); pullSet(); setInterval(pullSet, 60000); } catch (e) {} }, 0);
         /* Data from status.json, with empty states */
         var EMPTY = "No data yet — fills in after the next automation run";
         function fmtNum(v) { return typeof v === "number" ? v.toLocaleString("en-US") : String(v); }
@@ -1898,7 +1943,9 @@ tr.is-highlight > :last-child { box-shadow: 12px 0 var(--fill-tertiary); }
             var on = String(d.automation).toLowerCase() === "on" || d.automation === true;
             var ch = $("#lv-auto"); ch.textContent = "Automation " + (on ? "on" : "off"); ch.className = "chip" + (on ? " chip--solid" : "");
             var sc = $("#scan-chip"); sc.textContent = on ? "Active" : "Off"; sc.className = "chip" + (on ? " chip--solid" : "");
-            setMaster(on);
+            mergeSet(d.settings);
+            setMaster("ai-master" in SET.sw ? !!SET.sw["ai-master"] : on);
+            applySet();
             renderData(d);
             var STG = ["Scan news", "Script", "Voice", "Make video", "Upload to Rumble", "Live"];
             var sg = typeof cur.stage === "number" ? cur.stage : (state === "running" ? 0 : -1), tm = cur.stage_times || [];
