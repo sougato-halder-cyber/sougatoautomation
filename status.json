@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-06 20:26 IST",
+ "updated": "2026-11-06 20:30 IST",
  "automation": "on",
  "next_scan": "2026-11-07 09:00 IST",
  "week": {
@@ -60,6 +60,16 @@
    "url": "https://rumble.com/shorts/v7hv3zc",
    "views": 3,
    "date": "4 Nov 2026"
+  }
+ ],
+ "schedule": [
+  {
+   "when": "Sat 7 Nov, 9:00 AM IST: scan + build; upload at the best US time it picks",
+   "title": "Daily video (7 Nov)"
+  },
+  {
+   "when": "Sat 7 Nov, 9:00 PM IST",
+   "title": "Evening scan: extra video only with your yes"
   }
  ]
 }
