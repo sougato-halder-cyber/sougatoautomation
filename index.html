@@ -188,7 +188,7 @@
       .x-toast[hidden] { display: none; }
 
       /* Jarvis voice control */
-      .x-jarvis { position: fixed; z-index: 40; right: 16px; bottom: calc(env(safe-area-inset-bottom, 0px) + 88px); display: grid; justify-items: center; gap: 4px; }
+      .x-jarvis { position: fixed; z-index: 80; right: 16px; bottom: calc(env(safe-area-inset-bottom, 0px) + 88px); display: grid; justify-items: center; gap: 4px; }
       .x-jv-btn { display: grid; place-items: center; width: 56px; height: 56px; border: 0; border-radius: 50%; background: var(--fill-primary); color: var(--text-primary-on); box-shadow: var(--hark-shadow); cursor: pointer; transition: transform var(--dur-quick) var(--ease-out); }
       .x-jv-btn svg { width: 24px; height: 24px; fill: none; stroke: currentColor; stroke-width: 1.8; stroke-linecap: round; stroke-linejoin: round; }
       .x-jv-btn[aria-pressed="true"] { box-shadow: 0 0 0 4px var(--fill-primary-on), 0 0 0 6px var(--fill-system-green), var(--hark-shadow); }
@@ -196,8 +196,16 @@
       .x-jv-label { padding: 1px 8px; border-radius: var(--r-pill); background: var(--fill-primary-on); color: var(--text-primary); font: var(--type-caption); box-shadow: var(--hark-shadow); }
       .x-jv-bubble { position: absolute; right: 68px; bottom: 18px; width: max-content; max-width: min(260px, calc(100vw - 100px)); padding: 10px 14px; border-radius: var(--r-m); background: var(--mat-regular); -webkit-backdrop-filter: var(--hark-blur); backdrop-filter: var(--hark-blur); border: 1px solid var(--stroke-secondary); box-shadow: var(--hark-shadow); font: var(--type-small); color: var(--text-primary); }
       .x-jv-bubble[hidden] { display: none; }
+      .x-jv-bubble { width: min(280px, calc(100vw - 100px)); max-width: none; }
       .x-jv-bubble b { display: flex; align-items: center; gap: 6px; font: var(--type-caption); color: var(--text-secondary); margin-bottom: 2px; }
-      .x-jv-bubble b::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--fill-system-green); animation: x-jv-pulse 1s ease-in-out infinite; }
+      .x-jv-bubble b::before { content: ""; width: 7px; height: 7px; border-radius: 50%; background: var(--text-secondary); }
+      .x-jv-bubble.is-live b::before { background: var(--fill-system-green); animation: x-jv-pulse 1s ease-in-out infinite; }
+      .x-jv-note { margin-top: 6px; font: var(--type-caption); color: var(--text-secondary); }
+      .x-jv-note:empty { display: none; }
+      .x-jv-form { display: flex; gap: 6px; margin-top: 8px; }
+      .x-jv-form .x-input { padding: 0 12px; font: var(--type-small); }
+      .x-jv-form .btn { flex: none; min-height: var(--tap); }
+      .x-lock.is-gone { pointer-events: none; }
       @keyframes x-jv-pulse { 50% { opacity: 0.3; } }
       @media (min-width: 760px) { .x-jarvis { bottom: calc(env(safe-area-inset-bottom, 0px) + 24px); right: 24px; } }
       @media (prefers-reduced-motion: reduce) { .x-jv-bubble b::before { animation: none; } .x-jv-btn { transition: none; } }
@@ -718,7 +726,7 @@
     <p class="x-toast" id="toast" role="status" hidden></p>
 
     <div class="x-jarvis">
-      <div class="x-jv-bubble" id="jv-bubble" aria-live="polite" hidden><b>Listening…</b><span id="jv-text">Say a command</span></div>
+      <div class="x-jv-bubble" id="jv-bubble" hidden><div aria-live="polite"><b id="jv-state">Jarvis</b><span id="jv-text">Type or speak a command</span><p class="x-jv-note" id="jv-note"></p></div><form class="x-jv-form" id="jv-form" autocomplete="off"><input class="x-input" id="jv-input" type="text" placeholder="Type or speak a command" aria-label="Jarvis command" enterkeyhint="go" /><button class="btn" type="submit">Go</button></form></div>
       <button class="x-jv-btn" id="jv-btn" type="button" aria-pressed="false" aria-label="Jarvis voice control"><svg viewBox="0 0 24 24" aria-hidden="true"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></button>
       <span class="x-jv-label" aria-hidden="true">Jarvis</span>
     </div>
@@ -1305,32 +1313,82 @@
             show("chat"); var m = $("#msg"); m.value = raw.trim(); m.focus();
             done("Okay, I've put that in chat", ["Added to chat: tap Send to ask"]);
           }
-          function stopUI() {
-            listening = false; btn.setAttribute("aria-pressed", "false");
-            clearTimeout(bubT); bubT = setTimeout(function () { bub.hidden = true; }, 1200);
+          var state = $("#jv-state"), note = $("#jv-note"), form = $("#jv-form"), inp = $("#jv-input");
+          var framed = false; try { framed = window.self !== window.top; } catch (e) { framed = true; }
+          var FRAMED = "Voice works when opened directly (home-screen link) — type here meanwhile";
+          var NOVOICE = "Voice not available here — type instead";
+          var micAsked = false, micOK = false, skipEnd = false;
+          var ERRS = { "not-allowed": "Mic blocked — allow microphone for this site", "service-not-allowed": "Mic blocked — allow microphone for this site",
+            "audio-capture": "No microphone found", "network": "Voice needs internet (Chrome/Google speech)", "no-speech": "Didn't hear anything" };
+          function setLive(on) {
+            listening = on; btn.setAttribute("aria-pressed", on ? "true" : "false");
+            bub.classList.toggle("is-live", on); state.textContent = on ? "Listening…" : "Jarvis";
           }
-          btn.addEventListener("click", function () {
-            if (!SR) { toast("Voice isn't supported in this browser. Try Chrome or Samsung Internet."); return; }
-            if (listening && rec) { rec.stop(); return; }
+          function openBub() {
+            clearTimeout(bubT); bub.hidden = false;
+            txt.textContent = "Type or speak a command"; note.textContent = framed ? FRAMED : "";
+          }
+          function typeOnly(line) {
+            setLive(false); note.textContent = framed ? FRAMED : line;
+            txt.textContent = "Type or speak a command"; inp.focus();
+          }
+          function closeSoon() { clearTimeout(bubT); bubT = setTimeout(function () { if (!listening && document.activeElement !== inp) bub.hidden = true; }, 1200); }
+          function stopUI() { setLive(false); }
+          function run(cmd) { txt.textContent = cmd; handle(cmd); closeSoon(); }
+          function askMic() {
+            if (micAsked) return Promise.resolve(micOK);
+            if (!(navigator.mediaDevices && navigator.mediaDevices.getUserMedia)) return Promise.resolve(true);
+            return navigator.mediaDevices.getUserMedia({ audio: true }).then(function (s) {
+              s.getTracks().forEach(function (t) { t.stop(); }); micAsked = true; micOK = true; return true;
+            }, function (err) {
+              var n = err && err.name;
+              toast(n === "NotFoundError" || n === "OverconstrainedError" ? ERRS["audio-capture"] : n === "NotAllowedError" || n === "SecurityError" ? ERRS["not-allowed"] : "Voice error: " + (n || "mic"));
+              return false;
+            });
+          }
+          function listen() {
             rec = new SR(); rec.lang = "en-IN"; rec.interimResults = true; rec.continuous = false; rec.maxAlternatives = 1;
-            var final = "";
+            var final = "", lastLive = "", failed = false; skipEnd = false;
             rec.onresult = function (e) {
               var live = "";
               for (var i = e.resultIndex; i < e.results.length; i++) {
                 if (e.results[i].isFinal) final += e.results[i][0].transcript; else live += e.results[i][0].transcript;
               }
+              if (live.trim()) lastLive = live;
               txt.textContent = (final + live).trim() || "Say a command";
             };
             rec.onerror = function (e) {
-              if (e.error === "not-allowed" || e.error === "service-not-allowed") toast("Allow microphone access to use Jarvis");
-              else if (e.error === "no-speech") toast("Didn't catch that. Tap Jarvis and try again");
+              if (e.error === "aborted") return;
+              failed = true; toast(ERRS[e.error] || "Voice error: " + e.error);
             };
-            rec.onend = function () { stopUI(); if (final.trim()) handle(final); };
+            rec.onend = function () {
+              stopUI();
+              if (skipEnd) return;
+              var heard = final.trim() || lastLive.trim();
+              if (heard) { run(heard); return; }
+              txt.textContent = "Type or speak a command";
+              if (failed) { note.textContent = framed ? FRAMED : "Type your command instead"; inp.focus(); }
+            };
             try {
               if ("speechSynthesis" in window) speechSynthesis.cancel();
-              rec.start(); listening = true; btn.setAttribute("aria-pressed", "true");
-              clearTimeout(bubT); txt.textContent = "Say a command"; bub.hidden = false;
-            } catch (err) { stopUI(); toast("Couldn't start the mic. Try again"); }
+              rec.start(); setLive(true); txt.textContent = "Say a command";
+            } catch (err) { typeOnly(NOVOICE); }
+          }
+          btn.addEventListener("click", function () {
+            if (listening && rec) { rec.stop(); return; }
+            openBub();
+            if (!SR) { typeOnly(NOVOICE); return; }
+            askMic().then(function (ok) { if (ok) listen(); else typeOnly(NOVOICE); });
+          });
+          form.addEventListener("submit", function (e) {
+            e.preventDefault();
+            var v = inp.value.trim(); if (!v) { inp.focus(); return; }
+            if (listening && rec) { skipEnd = true; try { rec.abort(); } catch (err) {} stopUI(); }
+            inp.value = ""; inp.blur(); run(v);
+          });
+          inp.addEventListener("keydown", function (e) { if (e.key === "Escape") { inp.blur(); bub.hidden = true; } });
+          document.addEventListener("pointerdown", function (e) {
+            if (!bub.hidden && !listening && !e.target.closest(".x-jarvis")) bub.hidden = true;
           });
         })();
 
