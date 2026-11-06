@@ -1,1 +1,65 @@
-{"updated":"2026-11-06 20:10 IST","automation":"on","next_scan":"2026-11-07 09:00 IST","week":{"made":0,"cap":3},"current":{"state":"running","step":"Making a video: AI sell-off and crypto (started 8:01 PM)"},"runs":[]}
+{
+ "updated": "2026-11-06 20:26 IST",
+ "automation": "on",
+ "next_scan": "2026-11-07 09:00 IST",
+ "week": {
+  "made": 1,
+  "cap": 7
+ },
+ "current": {
+  "state": "idle",
+  "step": "Today's video is live. Next scan Sat 9:00 AM IST"
+ },
+ "runs": [
+  {
+   "time": "2026-11-06 20:23 IST",
+   "result": "video",
+   "topic": "AI selloff, $1.26B crypto liquidations, Dec Fed hike odds",
+   "why": "Biggest US market news of the day, high-RPM, fresh",
+   "title": "Bitcoin & Stocks Crash: AI Selloff, $1.26B Liquidated, and a December Rate Hike?",
+   "rumble_url": "https://rumble.com/v7hycsk-bitcoin-and-stocks-crash-ai-selloff-1.26b-liquidated-and-a-december-rate-hi.html",
+   "note": "5:26 long. 2 reels ready, not posted"
+  }
+ ],
+ "stats": {
+  "rumble": {
+   "views": 17,
+   "followers": 1,
+   "earnings": "Not yet",
+   "videos": 5,
+   "as_of": "6 Nov 2026, 8:25 PM IST"
+  }
+ },
+ "videos": [
+  {
+   "title": "Bitcoin & Stocks Crash: AI Selloff, $1.26B Liquidated, and a December Rate Hike?",
+   "url": "https://rumble.com/v7hycsk-bitcoin-and-stocks-crash-ai-selloff-1.26b-liquidated-and-a-december-rate-hi.html",
+   "views": 0,
+   "date": "6 Nov 2026"
+  },
+  {
+   "title": "How to Turn $500 a Month into $1 Million (The Realistic Plan)",
+   "url": "https://rumble.com/v7hwpz8-how-to-turn-500-a-month-into-1-million-the-realistic-plan.html",
+   "views": 0,
+   "date": "5 Nov 2026"
+  },
+  {
+   "title": "5 Beginner Money Mistakes That Will RAM Your Savings To Zero!",
+   "url": "https://rumble.com/v7hwkmw-5-beginner-money-mistakes-that-will-ram-your-savings-to-zero.html",
+   "views": 8,
+   "date": "5 Nov 2026"
+  },
+  {
+   "title": "Islamicvlog (Short)",
+   "url": "https://rumble.com/shorts/v7hv3j6",
+   "views": 6,
+   "date": "4 Nov 2026"
+  },
+  {
+   "title": "Islamicvlog (Short)",
+   "url": "https://rumble.com/shorts/v7hv3zc",
+   "views": 3,
+   "date": "4 Nov 2026"
+  }
+ ]
+}

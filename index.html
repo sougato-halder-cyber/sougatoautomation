@@ -1175,6 +1175,25 @@ tr.is-highlight > :last-child { box-shadow: 12px 0 var(--fill-tertiary); }
             <div class="stat"><span class="stat__fig" data-stat="videos">—</span><span class="stat__label">Videos live · Rumble</span></div>
           </section>
           <p class="x-empty" data-stats-note>No data yet — fills in after the next automation run</p>
+          <div class="x-card" id="myvids">
+            <div class="x-card-top"><h3>My Rumble videos</h3><span class="chip" id="mv-count">—</span></div>
+            <ul class="x-rows" id="mv-list" hidden></ul>
+            <p class="x-empty" id="mv-empty">No data yet — fills in after the next automation run</p>
+          </div>
+          <div class="x-card" id="calc">
+            <h3>Earning calculator · Rumble</h3>
+            <p class="x-sub">Estimate only. Rumble has no fixed rate; public 2026 guides put it around $2–$10 per 1,000 views, often lower for small new channels.</p>
+            <label class="x-calc-row">Views <input id="ec-views" type="number" min="0" step="100" inputmode="numeric" value="0" style="width:9em"></label>
+            <label class="x-calc-row">$ per 1,000 views (RPM) <input id="ec-rpm" type="range" min="0.25" max="10" step="0.25" value="2"> <b id="ec-rpm-v">$2.00</b></label>
+            <div class="links" style="margin:8px 0">
+              <button class="btn" type="button" data-rpm="1">Low $1</button>
+              <button class="btn" type="button" data-rpm="3">Typical $3</button>
+              <button class="btn" type="button" data-rpm="6">High $6</button>
+              <button class="btn" type="button" id="ec-mine">Use my views</button>
+            </div>
+            <p style="font-size:1.4em;margin:6px 0"><b id="ec-usd">$0.00</b> <small id="ec-inr">≈ ₹0</small></p>
+            <p class="fineprint" id="ec-note">Rumble pays out from $50. Real earnings show here only when Rumble shows them.</p>
+          </div>
           <div class="x-card" id="reco">
             <h3>AI Recommendations</h3>
             <ul class="x-rows" id="reco-list" hidden></ul>
@@ -1183,7 +1202,7 @@ tr.is-highlight > :last-child { box-shadow: 12px 0 var(--fill-tertiary); }
           <div class="x-grid">
             <aside class="callout" aria-label="Next AI scan">
               <p class="callout__head"><span class="hark-mark" data-size="16"></span> Next AI Research Scan</p>
-              <p class="callout__lead"><strong id="cd-when">Today 9:00 PM IST</strong> AI then decides if a video is worth making. Up to 3 a week, published to Rumble.</p>
+              <p class="callout__lead"><strong id="cd-when">Today 9:00 PM IST</strong> 1 video a day goes to Rumble at the best time; extras only with your yes.</p>
               <div class="x-count" aria-live="off"><div><b id="cd-d">0</b><span>days</span></div><div><b id="cd-h">00</b><span>hrs</span></div><div><b id="cd-m">00</b><span>min</span></div></div>
               <p class="fineprint">Auto-publish is on. Deletes always ask you first.</p>
             </aside>
@@ -1734,6 +1753,7 @@ tr.is-highlight > :last-child { box-shadow: 12px 0 var(--fill-tertiary); }
         /* Data from status.json, with empty states */
         var EMPTY = "No data yet — fills in after the next automation run";
         function fmtNum(v) { return typeof v === "number" ? v.toLocaleString("en-US") : String(v); }
+        function anOkE() { var v = $("#an-select") && $("#an-select").value; return v === "all" || v === "rumble"; }
         function renderData(d) {
           var r = (d && d.stats && d.stats.rumble) || null;
           var has = function (k) { return r && r[k] !== undefined && r[k] !== null && r[k] !== ""; };
@@ -1741,7 +1761,7 @@ tr.is-highlight > :last-child { box-shadow: 12px 0 var(--fill-tertiary); }
           $$("[data-stat]").forEach(function (el) {
             var k = el.getAttribute("data-stat");
             var show = has(k) && ($("#an-select").value === "all" || $("#an-select").value === "rumble" || !el.closest("#an-card"));
-            el.textContent = show ? fmtNum(r[k]) : "—";
+            el.textContent = show ? fmtNum(r[k]) : (k === "earnings" && el.closest("#an-card") === null || k === "earnings" && anOkE() ? "Not yet" : "—");
           });
           var anOk = $("#an-select").value === "all" || $("#an-select").value === "rumble";
           $$("[data-stats-note]").forEach(function (n) {
@@ -1756,6 +1776,7 @@ tr.is-highlight > :last-child { box-shadow: 12px 0 var(--fill-tertiary); }
           $("#sched-list").innerHTML = sch.map(function (x) { return '<li><span class="x-grow">' + esc(x.title) + '</span><span class="x-val">' + esc(x.when || "") + "</span></li>"; }).join("");
           $("#sched-list").hidden = !sch.length; $("#sched-empty").hidden = !!sch.length;
           renderAccts();
+          renderMyVids(d);
         }
         $("#langs").addEventListener("click", function (e) {
           var b = e.target.closest(".x-opt"); if (!b) return;
@@ -1769,6 +1790,35 @@ tr.is-highlight > :last-child { box-shadow: 12px 0 var(--fill-tertiary); }
           }
         });
 
+
+        /* My videos + earning calculator */
+        var MYVIEWS = 0;
+        function renderMyVids(d) {
+          var v = d && Array.isArray(d.videos) ? d.videos.filter(function (x) { return x && x.title; }) : [];
+          $("#mv-list").innerHTML = v.map(function (x) {
+            var t = x.url ? '<a href="' + esc(x.url) + '" target="_blank" rel="noopener">' + esc(x.title) + "</a>" : esc(x.title);
+            return '<li><span class="x-grow">' + t + (x.date ? "<small>" + esc(x.date) + "</small>" : "") + '</span><span class="x-val">' + (x.views !== undefined && x.views !== null ? esc(fmtNum(x.views)) + " views" : "") + "</span></li>";
+          }).join("");
+          $("#mv-list").hidden = !v.length; $("#mv-empty").hidden = !!v.length;
+          $("#mv-count").textContent = v.length ? v.length + " videos" : "—";
+          var r = d && d.stats && d.stats.rumble;
+          MYVIEWS = r && typeof r.views === "number" ? r.views : v.reduce(function (a, x) { return a + (+x.views || 0); }, 0);
+          var inp = $("#ec-views"); if (!inp.dataset.touched) { inp.value = MYVIEWS; calc(); }
+        }
+        function calc() {
+          var views = Math.max(0, +$("#ec-views").value || 0), rpm = +$("#ec-rpm").value || 0;
+          var usd = views / 1000 * rpm, rate = (LIVE && LIVE.usd_inr) || 88;
+          $("#ec-rpm-v").textContent = "$" + rpm.toFixed(2);
+          $("#ec-usd").textContent = "$" + usd.toFixed(2);
+          $("#ec-inr").textContent = "≈ ₹" + Math.round(usd * rate).toLocaleString("en-IN");
+          var need = rpm > 0 ? Math.ceil(50 / rpm * 1000) : 0;
+          $("#ec-note").textContent = "At $" + rpm.toFixed(2) + " per 1,000, the $50 payout needs about " + need.toLocaleString("en-US") + " views. Real earnings: " + ((LIVE && LIVE.stats && LIVE.stats.rumble && LIVE.stats.rumble.earnings) || "Not yet") + ".";
+        }
+        $("#ec-views").addEventListener("input", function () { this.dataset.touched = "1"; calc(); });
+        $("#ec-rpm").addEventListener("input", calc);
+        $$("[data-rpm]").forEach(function (b) { b.addEventListener("click", function () { $("#ec-rpm").value = b.dataset.rpm; calc(); }); });
+        $("#ec-mine").addEventListener("click", function () { var i = $("#ec-views"); i.value = MYVIEWS; delete i.dataset.touched; calc(); });
+        calc();
         /* Countdown to the next AI scan: 9:00 AM IST = 03:30 UTC, 9:00 PM IST = 15:30 UTC */
         var LIVE = null; /* status.json, once loaded */
         /* "2026-11-07 09:00 IST" -> Date */
@@ -1842,7 +1892,7 @@ tr.is-highlight > :last-child { box-shadow: 12px 0 var(--fill-tertiary); }
             renderData(d);
             $("#lv-updated").textContent = d.updated || "—";
             $("#lv-next").textContent = d.next_scan || "—";
-            var wk = d.week || {}, made = +wk.made || 0, cap = +wk.cap || 3;
+            var wk = d.week || {}, made = +wk.made || 0, cap = +wk.cap || 7;
             $("#lv-week").textContent = made + " / " + cap + " made";
             $("#wk-txt").textContent = made + " / " + cap;
             var bar = $("#scan-card .x-bar");
@@ -1911,7 +1961,8 @@ tr.is-highlight > :last-child { box-shadow: 12px 0 var(--fill-tertiary); }
         var cur = null, sheet = $("#sheet");
         function renderVideos() {
           var a = cur, n = liveVideos();
-          $("#sh-videos").innerHTML = '<li><span class="x-grow sub">' + (a.on ? (n !== null ? esc(fmtNum(n)) + " videos live. The video list fills in after the next automation run." : EMPTY) : "Not connected · connect via Hark chat.") + "</span></li>";
+          var lv = a.on && LIVE && Array.isArray(LIVE.videos) ? LIVE.videos : [];
+          $("#sh-videos").innerHTML = lv.length ? lv.map(function (x) { return '<li><span class="x-grow">' + (x.url ? '<a href="' + esc(x.url) + '" target="_blank" rel="noopener">' + esc(x.title) + "</a>" : esc(x.title)) + '</span><span class="x-val">' + (x.views != null ? esc(fmtNum(x.views)) + " views" : "") + "</span></li>"; }).join("") : '<li><span class="x-grow sub">' + (a.on ? (n !== null ? esc(fmtNum(n)) + " videos live." : EMPTY) : "Not connected · connect via Hark chat.") + "</span></li>";
         }
         function openSheet(a) {
           cur = a;
