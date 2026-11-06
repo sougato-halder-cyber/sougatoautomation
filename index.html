@@ -1244,7 +1244,7 @@ tr.is-highlight > :last-child { box-shadow: 12px 0 var(--fill-tertiary); }
               <button class="x-switch x-big" role="switch" aria-checked="false" id="ai-master" aria-label="AI Intelligence"></button>
             </div>
             <p class="x-ai-sub">When on, I scan all your channels, research your niche across YouTube and Google, find what's working, and start making and uploading original videos for every platform.</p>
-            <p class="fineprint">Shows the real state from the last automation run. To turn it on or off, tell Hark in chat. Always original videos. I learn from trends but never re-upload anyone else's content.</p>
+            <p class="fineprint">Turn it off here and the whole automation pauses from the next run. Always original videos. I learn from trends but never re-upload anyone else's content.</p>
           </div>
 
           <div class="x-card" id="scan-card">
@@ -1371,7 +1371,7 @@ tr.is-highlight > :last-child { box-shadow: 12px 0 var(--fill-tertiary); }
         <section class="x-panel" id="schedule" role="tabpanel" aria-labelledby="t-schedule" hidden>
           <div class="x-head"><div><h2>Schedule</h2><p>No fixed upload days</p></div></div>
           <div class="x-card">
-            <h3>AI-decided uploads, up to 3 a week</h3>
+            <h3>AI-decided uploads, 1 a day</h3>
             <ul class="x-rows">
               <li><span class="x-av x-ru">R</span><span class="x-grow">Rumble<small>@sougatohalder</small></span><span class="x-val">Published automatically</span></li>
               <li><span class="x-av x-ig">IG</span><span class="x-grow">Instagram<small>2 accounts</small></span><span class="x-val">Reels prepared once connected</span></li>
@@ -1444,7 +1444,7 @@ tr.is-highlight > :last-child { box-shadow: 12px 0 var(--fill-tertiary); }
         <section class="x-panel" id="chat" role="tabpanel" aria-labelledby="t-chat" hidden>
           <div class="x-head"><div><h2>Ask Hark</h2><p>Bangla, English or both</p></div></div>
           <div class="x-chat" id="thread" aria-live="polite">
-            <p class="x-msg x-msg--hark">Ask about your channels. To connect YouTube, Instagram or Facebook, tell Hark in chat.</p>
+            <p class="x-msg x-msg--hark">Type anything here: a question, an extra video yes, a new account to connect. Hark reads it at the next run and replies here.</p>
           </div>
           <form class="x-composer" id="composer">
             <div class="x-opts" aria-label="Quick questions">
@@ -1754,6 +1754,7 @@ tr.is-highlight > :last-child { box-shadow: 12px 0 var(--fill-tertiary); }
             if (sw.id === "ai-master") setMaster(nv === "true");
             if (sw.id !== "sh-auto") saveSet();
           }
+          if (e.target.closest("[role=radio], .x-opt[aria-pressed]") && !e.target.closest("[data-q]")) setTimeout(saveSet, 0);
           var r = e.target.closest("[data-radio] [role=radio]");
           if (r) $$("[role=radio]", r.parentNode).forEach(function (o) { o.setAttribute("aria-checked", o === r ? "true" : "false"); });
         });
@@ -1775,20 +1776,29 @@ tr.is-highlight > :last-child { box-shadow: 12px 0 var(--fill-tertiary); }
         }
         function mergeSet(s) {
           if (!s || !s.sw || (+s.ts || 0) <= (+SET.ts || 0)) return;
-          SET = { ts: +s.ts, sw: s.sw };
+          SET = { ts: +s.ts, sw: s.sw, opts: s.opts };
           try { localStorage.setItem("sg-settings", JSON.stringify(SET)); } catch (e) {}
           applySet();
         }
         function saveSet() {
           var sw = {};
           realSwitches().forEach(function (el) { sw[swKey(el)] = el.getAttribute("aria-checked") === "true"; });
-          SET = { ts: Date.now(), sw: sw };
+          var opts = {};
+          $$("[role=radio][aria-checked=true]").forEach(function (o) { var g = o.parentNode.getAttribute("aria-label") || o.parentNode.id || "choice"; opts[g] = o.textContent.trim(); });
+          opts.pressed = $$(".x-opt[aria-pressed=true]").map(function (o) { return o.textContent.trim(); });
+          SET = { ts: Date.now(), sw: sw, opts: opts };
           try { localStorage.setItem("sg-settings", JSON.stringify(SET)); } catch (e) {}
           if (!window.fetch) return;
           fetch(CTL, { method: "POST", body: JSON.stringify(SET) })
             .then(function (r) { toast(r.ok ? "Saved · the automation follows it from the next run" : "Saved on this phone only, try again"); })
             .catch(function () { toast("Saved on this phone only, try again"); });
         }
+        function sendCmd(text) {
+          if (!window.fetch) return Promise.resolve(false);
+          return fetch(CTL, { method: "POST", body: JSON.stringify({ ts: Date.now(), cmd: String(text).slice(0, 3000) }) })
+            .then(function (r) { return r.ok; }).catch(function () { return false; });
+        }
+        var NEXT_RUN = "the next run (9 AM or 9 PM IST)";
         function pullSet() {
           if (!window.fetch) return;
           fetch(CTL + "/json?poll=1&since=12h").then(function (r) { return r.text(); }).then(function (t) {
@@ -1944,6 +1954,7 @@ tr.is-highlight > :last-child { box-shadow: 12px 0 var(--fill-tertiary); }
             var ch = $("#lv-auto"); ch.textContent = "Automation " + (on ? "on" : "off"); ch.className = "chip" + (on ? " chip--solid" : "");
             var sc = $("#scan-chip"); sc.textContent = on ? "Active" : "Off"; sc.className = "chip" + (on ? " chip--solid" : "");
             mergeSet(d.settings);
+            if (Array.isArray(d.replies)) d.replies.slice(-10).forEach(function (r) { var k = "rp:" + (r.time || "") + (r.text || "").slice(0, 20); if (!r || !r.text || document.querySelector('[data-rk="' + k.replace(/"/g, "") + '"]')) return; var p = document.createElement("p"); p.className = "x-msg x-msg--hark"; p.dataset.rk = k.replace(/"/g, ""); p.textContent = (r.time ? r.time + " · " : "") + r.text; $("#thread").appendChild(p); });
             setMaster("ai-master" in SET.sw ? !!SET.sw["ai-master"] : on);
             applySet();
             renderData(d);
@@ -2043,12 +2054,13 @@ tr.is-highlight > :last-child { box-shadow: 12px 0 var(--fill-tertiary); }
           sheet.showModal();
         }
         function syncAuto() { $("#sh-auto-note").textContent = cur.auto ? "On: Hark makes and posts on schedule" : "Off: nothing posts without you"; }
-        $("#sh-auto").addEventListener("click", function () { cur.auto = !cur.auto; syncAuto(); });
-        $("#st-minus").addEventListener("click", function () { cur.perWeek = Math.max(0, cur.perWeek - 1); $("#st-val").textContent = cur.perWeek; });
-        $("#st-plus").addEventListener("click", function () { cur.perWeek = Math.min(3, cur.perWeek + 1); $("#st-val").textContent = cur.perWeek; });
+        var chT; function chSend() { clearTimeout(chT); chT = setTimeout(function () { sendCmd("Channel settings for " + cur.name + ": auto-pilot " + (cur.auto ? "on" : "off") + ", videos per week " + cur.perWeek + ", niche " + cur.niche).then(function (ok) { toast(ok ? "Saved · applies from " + NEXT_RUN : "Not sent, check internet"); }); }, 1200); }
+        $("#sh-auto").addEventListener("click", function () { cur.auto = !cur.auto; syncAuto(); chSend(); });
+        $("#st-minus").addEventListener("click", function () { cur.perWeek = Math.max(0, cur.perWeek - 1); $("#st-val").textContent = cur.perWeek; chSend(); });
+        $("#st-plus").addEventListener("click", function () { cur.perWeek = Math.min(7, cur.perWeek + 1); $("#st-val").textContent = cur.perWeek; chSend(); });
         $("#sh-nichesel").addEventListener("change", function () {
           cur.niche = this.value;
-          $("#sh-niche").textContent = (this.value === "Custom" ? "Custom niche" : this.value) + ", US";
+          $("#sh-niche").textContent = (this.value === "Custom" ? "Custom niche" : this.value) + ", US"; chSend();
         });
         $("#acct-list").addEventListener("click", function (e) {
           var b = e.target.closest("[data-acct]"); if (b) openSheet(accts[b.dataset.acct]);
@@ -2070,10 +2082,10 @@ tr.is-highlight > :last-child { box-shadow: 12px 0 var(--fill-tertiary); }
         });
 
         $("#add-acct").addEventListener("click", function () { $("#add").showModal(); });
-        $("#add").addEventListener("close", function () { var v = this.returnValue; if (v && v !== "cancel") toast("To connect " + v + ", tell Hark in chat"); this.returnValue = ""; });
+        $("#add").addEventListener("close", function () { var v = this.returnValue; if (v && v !== "cancel") sendCmd("Connect my " + v + " account").then(function (ok) { toast(ok ? "Sent · Hark sets up " + v + " at " + NEXT_RUN : "Not sent, check internet"); }); this.returnValue = ""; });
         $("#own-script").addEventListener("click", function () { $("#script").showModal(); });
         $("#script").addEventListener("close", function () {
-          if (this.returnValue === "build") { toast($("#sc-text").value.trim() ? "Script queued: it starts at Voice (preview)" : "Paste a script first"); }
+          if (this.returnValue === "build") { var sct = $("#sc-text").value.trim(); if (!sct) toast("Paste a script first"); else sendCmd("Build a stick-man video from my script:\n" + sct).then(function (ok) { toast(ok ? "Script sent · video gets built at " + NEXT_RUN : "Not sent, check internet"); }); }
           this.returnValue = "";
         });
 
@@ -2123,7 +2135,7 @@ tr.is-highlight > :last-child { box-shadow: 12px 0 var(--fill-tertiary); }
         function send(text) {
           text = text.trim(); if (!text) return;
           bubble(text, "me"); $("#msg").value = "";
-          setTimeout(function () { bubble("In the live version, I'll answer this from your real channel data.", "hark"); }, 500);
+          sendCmd(text).then(function (ok) { bubble(ok ? "Got it. Hark acts on this at " + NEXT_RUN + " and replies here." : "Not sent, check your internet and try again.", "hark"); });
         }
         $("#composer").addEventListener("submit", function (e) { e.preventDefault(); send($("#msg").value); });
         $$("[data-q]").forEach(function (b) { b.addEventListener("click", function () { send(b.textContent); }); });
