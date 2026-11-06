@@ -1038,6 +1038,14 @@ tr.is-highlight > :last-child { box-shadow: 12px 0 var(--fill-tertiary); }
       .x-lv-meta div { padding: 10px 12px; border-radius: var(--r-s); background: var(--fill-primary-on); }
       .x-lv-meta span { display: block; font: var(--type-caption); color: var(--text-secondary); }
       .x-lv-meta b { display: block; margin-top: 2px; font: var(--type-label); font-variant-numeric: tabular-nums; }
+      .x-track { list-style: none; margin: 14px 0 0; padding: 0; display: grid; gap: 6px; }
+      .x-track li { display: flex; align-items: center; gap: 10px; padding: 8px 12px; border-radius: var(--r-s); background: var(--fill-primary-on); font: var(--type-label); color: var(--text-secondary); }
+      .x-track li::before { content: ""; flex: none; width: 18px; height: 18px; border-radius: 50%; border: 2px solid var(--stroke-primary); box-sizing: border-box; }
+      .x-track li.done { color: var(--text-primary); }
+      .x-track li.done::before { content: "✓"; display: grid; place-items: center; font-size: 12px; color: #fff; background: var(--fill-system-green); border-color: var(--fill-system-green); }
+      .x-track li.now { color: var(--text-primary); }
+      .x-track li.now::before { border-color: var(--fill-system-orange); background: var(--fill-system-orange); animation: x-pulse 1.4s ease-in-out infinite; }
+      .x-track li small { margin-left: auto; font: var(--type-caption); color: var(--text-secondary); }
       .x-lv-note { margin-top: 10px; color: var(--text-secondary); font: var(--type-small); }
       .x-lv-note[hidden] { display: none; }
       .x-runs { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
@@ -1160,10 +1168,12 @@ tr.is-highlight > :last-child { box-shadow: 12px 0 var(--fill-tertiary); }
               <span class="chip" id="lv-auto">Checking…</span>
             </div>
             <p class="x-lv-pill" id="lv-pill" data-state="idle"><span id="lv-state">Checking</span> <small id="lv-step">Reading status…</small></p>
+            <ol class="x-track" id="lv-track" aria-label="Video progress"></ol>
             <div class="x-lv-meta">
               <div><span>Last update</span><b id="lv-updated">—</b></div>
               <div><span>Next scan</span><b id="lv-next">—</b></div>
               <div><span>This week</span><b id="lv-week">—</b></div>
+              <div><span>Next upload</span><b id="lv-nextup">—</b></div>
             </div>
             <ul class="x-runs" id="lv-latest" hidden></ul>
             <p class="x-lv-note" id="lv-note" hidden>Live status available on the home-screen link</p>
@@ -1890,6 +1900,14 @@ tr.is-highlight > :last-child { box-shadow: 12px 0 var(--fill-tertiary); }
             var sc = $("#scan-chip"); sc.textContent = on ? "Active" : "Off"; sc.className = "chip" + (on ? " chip--solid" : "");
             setMaster(on);
             renderData(d);
+            var STG = ["Scan news", "Script", "Voice", "Make video", "Upload to Rumble", "Live"];
+            var sg = typeof cur.stage === "number" ? cur.stage : (state === "running" ? 0 : -1), tm = cur.stage_times || [];
+            $("#lv-track").innerHTML = sg < 0 ? "" : STG.map(function (n, i) {
+              var c = i < sg || sg >= STG.length ? "done" : (i === sg && state === "running" ? "now" : "");
+              return '<li class="' + c + '">' + n + (tm[i] ? "<small>" + String(tm[i]).replace(/</g, "") + "</small>" : "") + "</li>";
+            }).join("");
+            var sch0 = Array.isArray(d.schedule) && d.schedule[0];
+            $("#lv-nextup").textContent = d.next_upload || (sch0 && sch0.title) || "—";
             $("#lv-updated").textContent = d.updated || "—";
             $("#lv-next").textContent = d.next_scan || "—";
             var wk = d.week || {}, made = +wk.made || 0, cap = +wk.cap || 7;
@@ -1922,8 +1940,8 @@ tr.is-highlight > :last-child { box-shadow: 12px 0 var(--fill-tertiary); }
           }
           function load() {
             /* Preview hosts and local files carry no status.json: show the fallback without a failing request */
-            if (!window.fetch || location.protocol === "file:" || /(^|\.)amazonaws\.com$/i.test(location.hostname)) { fail(); return; }
-            fetch("status.json?t=" + Date.now(), { cache: "no-store" })
+            if (!window.fetch || location.protocol === "file:" ) { fail(); return; }
+            fetch("https://sougato-halder-cyber.github.io/sougatoautomation/status.json?t=" + Date.now(), { cache: "no-store" })
               .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
               .then(function (d) { if (!d || typeof d !== "object") throw new Error("bad"); render(d); })
               .catch(fail);
