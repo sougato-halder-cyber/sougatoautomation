@@ -1023,6 +1023,35 @@ tr.is-highlight > :last-child { box-shadow: 12px 0 var(--fill-tertiary); }
       .x-feed li.is-done { color: var(--text-secondary); }
       .x-feed li.is-done::before { content: "✓"; color: var(--fill-system-green); }
       @media (prefers-reduced-motion: reduce) { .x-ai.is-on, .x-ai.is-on .x-status::before, .x-feed li { animation: none; } }
+      /* Live automation (status.json) */
+      .x-demo { display: inline-block; vertical-align: middle; margin-left: 6px; padding: 1px 7px; border: 1px solid var(--stroke-primary); border-radius: var(--r-pill); color: var(--text-secondary); font: var(--type-caption); font-weight: var(--weight-regular); }
+      .x-demo[hidden] { display: none; }
+      .x-lv-pill { display: inline-flex; align-items: center; gap: 10px; min-height: var(--tap); padding: 8px 18px 8px 14px; border-radius: var(--r-pill); background: var(--fill-primary-on); font: var(--type-heading); }
+      .x-lv-pill::before { content: ""; flex: none; width: 12px; height: 12px; border-radius: 50%; background: var(--stroke-primary); }
+      .x-lv-pill[data-state="running"]::before { background: var(--fill-system-green); box-shadow: 0 0 0 4px color-mix(in srgb, var(--fill-system-green) 25%, transparent); animation: x-pulse 1.4s ease-in-out infinite; }
+      .x-lv-pill[data-state="error"] { background: var(--fill-system-red); color: #fff; }
+      .x-lv-pill[data-state="error"]::before { background: #fff; }
+      .x-lv-pill small { font: var(--type-label); color: var(--text-secondary); }
+      .x-lv-pill[data-state="error"] small { color: #fff; }
+      .x-lv-meta { display: grid; gap: 8px; grid-template-columns: repeat(auto-fit, minmax(min(100%, 140px), 1fr)); margin: 14px 0; }
+      .x-lv-meta div { padding: 10px 12px; border-radius: var(--r-s); background: var(--fill-primary-on); }
+      .x-lv-meta span { display: block; font: var(--type-caption); color: var(--text-secondary); }
+      .x-lv-meta b { display: block; margin-top: 2px; font: var(--type-label); font-variant-numeric: tabular-nums; }
+      .x-lv-note { margin-top: 10px; color: var(--text-secondary); font: var(--type-small); }
+      .x-lv-note[hidden] { display: none; }
+      .x-runs { list-style: none; margin: 0; padding: 0; display: grid; gap: 8px; }
+      .x-run { display: grid; gap: 6px; padding: 14px; border-radius: var(--r-s); background: var(--fill-primary-on); }
+      .x-run-top { display: flex; align-items: center; justify-content: space-between; gap: 8px; flex-wrap: wrap; }
+      .x-run-time { font: var(--type-caption); color: var(--text-secondary); }
+      .x-run h4 { margin: 0; font: var(--type-body-strong); }
+      .x-run p { margin: 0; font: var(--type-small); color: var(--text-secondary); }
+      .x-run .x-why { display: -webkit-box; -webkit-line-clamp: 2; -webkit-box-orient: vertical; overflow: hidden; color: var(--text-primary); }
+      .x-run .btn { justify-self: start; margin-top: 4px; }
+      .x-res { display: inline-flex; align-items: center; gap: 6px; padding: 3px 10px; border-radius: var(--r-pill); font: var(--type-tag); background: var(--fill-tertiary); }
+      .x-res::before { content: ""; width: 8px; height: 8px; border-radius: 50%; background: var(--stroke-primary); }
+      .x-res[data-r="video"]::before { background: var(--fill-system-green); }
+      .x-res[data-r="error"]::before { background: var(--fill-system-red); }
+      @media (prefers-reduced-motion: reduce) { .x-lv-pill[data-state="running"]::before { animation: none; } }
       .x-auto .x-grow { flex: 1; min-width: 0; }
       .x-ic { flex: none; display: grid; place-items: center; width: 36px; height: 36px; border-radius: 50%; background: var(--fill-primary-on); }
       .x-ic svg { width: 18px; height: 18px; fill: none; stroke: currentColor; stroke-width: 1.6; stroke-linecap: round; stroke-linejoin: round; }
@@ -1125,6 +1154,20 @@ tr.is-highlight > :last-child { box-shadow: 12px 0 var(--fill-tertiary); }
         <!-- HOME -->
         <section class="x-panel" id="home" role="tabpanel" aria-labelledby="t-home">
           <div class="x-head"><div><h1>Hi Sougato</h1><p>All platforms, last 28 days · demo</p></div></div>
+          <div class="x-card" id="live-card" aria-live="polite">
+            <div class="x-card-top">
+              <h3>Live Automation</h3>
+              <span class="chip" id="lv-auto">Checking…</span>
+            </div>
+            <p class="x-lv-pill" id="lv-pill" data-state="idle"><span id="lv-state">Checking</span> <small id="lv-step">Reading status…</small></p>
+            <div class="x-lv-meta">
+              <div><span>Last update</span><b id="lv-updated">—</b></div>
+              <div><span>Next scan</span><b id="lv-next">—</b></div>
+              <div><span>This week</span><b id="lv-week">—</b></div>
+            </div>
+            <ul class="x-runs" id="lv-latest" hidden></ul>
+            <p class="x-lv-note" id="lv-note" hidden>Live status available on the home-screen link</p>
+          </div>
           <section class="stats">
             <div class="stat"><span class="stat__fig">12,480</span><span class="stat__label">Total views, 28 days · <span class="x-up">+18%</span></span></div>
             <div class="stat"><span class="stat__fig">1,240</span><span class="stat__label">Subscribers + followers · <span class="x-up">+96</span></span></div>
@@ -1132,7 +1175,7 @@ tr.is-highlight > :last-child { box-shadow: 12px 0 var(--fill-tertiary); }
             <div class="stat"><span class="stat__fig">5</span><span class="stat__label">Videos live</span></div>
           </section>
           <div class="x-card" id="reco">
-            <h3>AI Recommendations</h3>
+            <h3>AI Recommendations <span class="x-demo">demo</span></h3>
             <p class="x-lbl" style="margin-top:0">Next best video</p>
             <p style="font: var(--type-heading)">Why Bitcoin Fell 5 Weeks Straight</p>
             <div class="x-reco-meta">
@@ -1152,13 +1195,13 @@ tr.is-highlight > :last-child { box-shadow: 12px 0 var(--fill-tertiary); }
           </figure>
           <div class="x-grid">
             <aside class="callout" aria-label="Next AI scan">
-              <p class="callout__head"><span class="hark-mark" data-size="16"></span> Next AI Research Scan</p>
+              <p class="callout__head"><span class="hark-mark" data-size="16"></span> Next AI Research Scan <span class="x-demo" data-live-hide>demo</span></p>
               <p class="callout__lead"><strong id="cd-when">Today 9:00 PM IST</strong> AI then decides if a video is worth making. Up to 3 a week, published to Rumble.</p>
               <div class="x-count" aria-live="off"><div><b id="cd-d">0</b><span>days</span></div><div><b id="cd-h">00</b><span>hrs</span></div><div><b id="cd-m">00</b><span>min</span></div></div>
               <p class="fineprint">Auto-publish is on. Deletes always ask you first.</p>
             </aside>
             <div class="x-card">
-              <h3>Growing or slowing?</h3>
+              <h3>Growing or slowing? <span class="x-demo">demo</span></h3>
               <ul class="x-rows">
                 <li><span class="x-av x-yt">YT</span><span class="x-grow">YouTube</span><span class="pill"><span class="x-up">Growing ▲</span> 22%</span></li>
                 <li><span class="x-av x-ru">R</span><span class="x-grow">Rumble</span><span class="pill"><span class="x-up">Growing ▲</span> 9%</span></li>
@@ -1169,7 +1212,7 @@ tr.is-highlight > :last-child { box-shadow: 12px 0 var(--fill-tertiary); }
             </div>
           </div>
           <div class="x-card">
-            <h3>Alerts</h3>
+            <h3>Alerts <span class="x-demo">demo</span></h3>
             <ul class="checklist">
               <li><span class="checklist__item">New comment needs a reply <small>YouTube</small></span><span class="chip chip--solid">Reply</span></li>
               <li class="is-done"><span class="checklist__item">No copyright claims <small>All platforms</small></span><span class="chip">All clear</span></li>
@@ -1182,10 +1225,19 @@ tr.is-highlight > :last-child { box-shadow: 12px 0 var(--fill-tertiary); }
         <!-- AUTOMATION -->
         <section class="x-panel" id="automation" role="tabpanel" aria-labelledby="t-automation" hidden>
           <div class="x-head"><div><h2>Automation</h2><p>What runs on its own · demo</p></div></div>
+          <div class="x-card" id="runs-card">
+            <div class="x-card-top">
+              <h3>Live runs</h3>
+              <span class="chip" id="runs-count">Checking…</span>
+            </div>
+            <p class="x-sub" id="runs-sub">Every scan, newest first.</p>
+            <ul class="x-runs" id="runs-list"></ul>
+            <p class="x-lv-note" id="runs-note" hidden>Live status available on the home-screen link</p>
+          </div>
           <div class="x-ai" id="ai-card">
             <div class="x-ai-top">
               <div>
-                <h3>AI Intelligence</h3>
+                <h3>AI Intelligence <span class="x-demo">demo</span></h3>
                 <p class="x-status" id="ai-status" aria-live="polite">Paused · nothing runs automatically</p>
               </div>
               <button class="x-switch x-big" role="switch" aria-checked="false" id="ai-master" aria-label="AI Intelligence"></button>
@@ -1198,10 +1250,10 @@ tr.is-highlight > :last-child { box-shadow: 12px 0 var(--fill-tertiary); }
           <div class="x-card" id="scan-card">
             <div class="x-card-top">
               <h3>AI Research Scan</h3>
-              <span class="chip chip--solid">Active</span>
+              <span class="chip chip--solid" id="scan-chip">Active</span>
             </div>
             <div class="x-quota">
-              <p>This week: 0 / 3 videos</p>
+              <p>This week: <span id="wk-txt">0 / 3</span> videos <span class="x-demo" data-live-hide>demo</span></p>
               <div class="x-bar" role="progressbar" aria-label="Videos made this week" aria-valuemin="0" aria-valuemax="3" aria-valuenow="0"><i style="width: 0%"></i></div>
             </div>
             <ul class="x-rows">
@@ -1212,7 +1264,7 @@ tr.is-highlight > :last-child { box-shadow: 12px 0 var(--fill-tertiary); }
           </div>
 
           <div class="x-card" id="style-picker">
-            <h3>AI Style Picker</h3>
+            <h3>AI Style Picker <span class="x-demo">demo</span></h3>
             <button class="x-switch" role="switch" aria-checked="true" id="style-ai">Let AI choose the best format</button>
             <p class="x-sub">After trend research, I pick the video style and thumbnail style most likely to get views on each platform.</p>
             <div class="table-wrap">
@@ -1249,7 +1301,7 @@ tr.is-highlight > :last-child { box-shadow: 12px 0 var(--fill-tertiary); }
           </div>
 
           <div class="x-card x-auto">
-            <h3>What's automated</h3>
+            <h3>What's automated <span class="x-demo">demo</span></h3>
             <button class="x-switch" role="switch" aria-checked="true"><span class="x-ic"><svg viewBox="0 0 24 24"><path d="M4 20l4-1 11-11-3-3L5 16z"/></svg></span><span class="x-grow">Script writing<small>Original script from the picked topic · last run Sun 9:20 PM IST</small></span></button>
             <button class="x-switch" role="switch" aria-checked="true"><span class="x-ic"><svg viewBox="0 0 24 24"><rect x="9" y="3" width="6" height="11" rx="3"/><path d="M5 11a7 7 0 0 0 14 0M12 18v3"/></svg></span><span class="x-grow">Voiceover<small>Narration for every script · last run Sun 9:45 PM IST</small></span></button>
             <button class="x-switch" role="switch" aria-checked="true"><span class="x-ic"><svg viewBox="0 0 24 24"><circle cx="12" cy="6" r="2.5"/><path d="M12 8.5V15M12 15l-4 5M12 15l4 5M7 11h10"/></svg></span><span class="x-grow">Stick-man animation<small>Animates the voiceover scene by scene · last run Mon 10:30 AM IST</small></span></button>
@@ -2337,8 +2389,32 @@ tr.is-highlight > :last-child { box-shadow: 12px 0 var(--fill-tertiary); }
         });
 
         /* Countdown to the next AI scan: 9:00 AM IST = 03:30 UTC, 9:00 PM IST = 15:30 UTC */
+        var LIVE = null; /* status.json, once loaded */
+        /* "2026-11-07 09:00 IST" -> Date */
+        function parseIST(s) {
+          var m = String(s || "").match(/(\d{4})-(\d{1,2})-(\d{1,2})[ T]+(\d{1,2}):(\d{2})/);
+          return m ? new Date(Date.UTC(+m[1], m[2] - 1, +m[3], +m[4], +m[5]) - 330 * 60000) : null;
+        }
+        /* Date -> "Today 9:00 AM IST", "Tomorrow …" or "Sat 7 Nov 9:00 AM IST" */
+        function fmtIST(t) {
+          var now = new Date(), i = new Date(t.getTime() + 330 * 60000), n = new Date(now.getTime() + 330 * 60000);
+          var day = Math.round((Date.UTC(i.getUTCFullYear(), i.getUTCMonth(), i.getUTCDate()) - Date.UTC(n.getUTCFullYear(), n.getUTCMonth(), n.getUTCDate())) / 864e5);
+          var h = i.getUTCHours(), mi = String(i.getUTCMinutes()).padStart(2, "0");
+          var clock = ((h % 12) || 12) + ":" + mi + (h < 12 ? " AM" : " PM") + " IST";
+          var lbl = day === 0 ? "Today" : day === 1 ? "Tomorrow" : ["Sun", "Mon", "Tue", "Wed", "Thu", "Fri", "Sat"][i.getUTCDay()] + " " + i.getUTCDate() + " " + ["Jan", "Feb", "Mar", "Apr", "May", "Jun", "Jul", "Aug", "Sep", "Oct", "Nov", "Dec"][i.getUTCMonth()];
+          return lbl + " " + clock;
+        }
         function tick() {
           var now = new Date(), am = new Date(now), pm = new Date(now);
+          var lt = LIVE && parseIST(LIVE.next_scan);
+          if (lt) {
+            $("#cd-when").textContent = fmtIST(lt);
+            var lm = Math.max(0, Math.floor((lt - now) / 60000));
+            $("#cd-d").textContent = Math.floor(lm / 1440);
+            $("#cd-h").textContent = String(Math.floor((lm % 1440) / 60)).padStart(2, "0");
+            $("#cd-m").textContent = String(lm % 60).padStart(2, "0");
+            return;
+          }
           am.setUTCHours(3, 30, 0, 0); pm.setUTCHours(15, 30, 0, 0);
           if (am <= now) am.setUTCDate(am.getUTCDate() + 1);
           if (pm <= now) pm.setUTCDate(pm.getUTCDate() + 1);
@@ -2351,6 +2427,74 @@ tr.is-highlight > :last-child { box-shadow: 12px 0 var(--fill-tertiary); }
           $("#cd-m").textContent = String(m % 60).padStart(2, "0");
         }
         tick(); setInterval(tick, 30000);
+
+        /* Live Automation: status.json, on load and every 60 s */
+        (function () {
+          var RES = { video: "Video published", skipped: "Skipped", error: "Error" };
+          var ST = { running: "Running", idle: "Idle", error: "Error" };
+          function runHTML(r) {
+            var res = RES[r.result] ? r.result : "skipped";
+            var h = '<li class="x-run"><div class="x-run-top"><span class="x-res" data-r="' + res + '">' + RES[res] + "</span>" +
+              (r.time ? '<span class="x-run-time">' + esc(r.time) + "</span>" : "") + "</div>";
+            if (r.title) h += "<h4>" + esc(r.title) + "</h4>";
+            if (r.topic) h += "<p><b>Topic:</b> " + esc(r.topic) + "</p>";
+            if (r.why) h += '<p class="x-why">' + esc(r.why) + "</p>";
+            if (r.note) h += "<p>" + esc(r.note) + "</p>";
+            if (r.rumble_url && /^https?:\/\//i.test(r.rumble_url)) h += '<a class="btn x-primary" href="' + esc(r.rumble_url) + '" target="_blank" rel="noopener">Open on Rumble</a>';
+            return h + "</li>";
+          }
+          function sortRuns(runs) {
+            return (Array.isArray(runs) ? runs.slice() : []).map(function (r, i) { return { r: r || {}, i: i, t: parseIST(r && r.time) }; })
+              .sort(function (a, b) { return a.t && b.t ? b.t - a.t : b.i - a.i; })
+              .map(function (x) { return x.r; });
+          }
+          function render(d) {
+            LIVE = d;
+            var cur = d.current || {}, state = ST[cur.state] ? cur.state : "idle";
+            var pill = $("#lv-pill"); pill.dataset.state = state;
+            $("#lv-state").textContent = ST[state];
+            $("#lv-step").textContent = cur.step || (state === "idle" ? "Waiting for the next scan" : "");
+            var on = String(d.automation).toLowerCase() === "on" || d.automation === true;
+            var ch = $("#lv-auto"); ch.textContent = "Automation " + (on ? "on" : "off"); ch.className = "chip" + (on ? " chip--solid" : "");
+            var sc = $("#scan-chip"); sc.textContent = on ? "Active" : "Off"; sc.className = "chip" + (on ? " chip--solid" : "");
+            $("#lv-updated").textContent = d.updated || "—";
+            $("#lv-next").textContent = d.next_scan || "—";
+            var wk = d.week || {}, made = +wk.made || 0, cap = +wk.cap || 3;
+            $("#lv-week").textContent = made + " / " + cap + " made";
+            $("#wk-txt").textContent = made + " / " + cap;
+            var bar = $("#scan-card .x-bar");
+            bar.setAttribute("aria-valuemax", cap); bar.setAttribute("aria-valuenow", made);
+            bar.querySelector("i").style.width = Math.min(100, Math.round((made / cap) * 100)) + "%";
+            $$("[data-live-hide]").forEach(function (e) { e.hidden = true; });
+            var runs = sortRuns(d.runs), lat = $("#lv-latest");
+            lat.innerHTML = runs.length ? runHTML(runs[0]) : "";
+            lat.hidden = !runs.length;
+            $("#runs-list").innerHTML = runs.length ? runs.map(runHTML).join("") : '<li class="x-run"><p>No runs yet.</p></li>';
+            $("#runs-count").textContent = runs.length + (runs.length === 1 ? " run" : " runs");
+            $("#runs-sub").textContent = "Every scan, newest first · updated " + (d.updated || "—");
+            $("#lv-note").hidden = true; $("#runs-note").hidden = true;
+            tick();
+          }
+          function fail() {
+            if (LIVE) return; /* keep the last good status */
+            $("#lv-pill").dataset.state = "idle";
+            $("#lv-state").textContent = "Demo";
+            $("#lv-step").textContent = "Not connected here";
+            $("#lv-auto").textContent = "Offline";
+            $("#lv-note").hidden = false; $("#runs-note").hidden = false;
+            $("#runs-count").textContent = "Offline";
+            $("#runs-list").innerHTML = "";
+          }
+          function load() {
+            /* Preview hosts and local files carry no status.json: show the fallback without a failing request */
+            if (!window.fetch || location.protocol === "file:" || /(^|\.)amazonaws\.com$/i.test(location.hostname)) { fail(); return; }
+            fetch("status.json?t=" + Date.now(), { cache: "no-store" })
+              .then(function (r) { if (!r.ok) throw new Error(r.status); return r.json(); })
+              .then(function (d) { if (!d || typeof d !== "object") throw new Error("bad"); render(d); })
+              .catch(fail);
+          }
+          load(); setInterval(load, 60000);
+        })();
 
         /* Channels */
         var accts = [
@@ -2834,8 +2978,9 @@ tr.is-highlight > :last-child { box-shadow: 12px 0 var(--fill-tertiary); }
           }
           function nextBn() {
             var s = $("#cd-when").textContent || "";
-            var h = (s.match(/(\d+)/) || [0, 9])[1];
-            return (/tomorrow/i.test(s) ? "কাল " : "আজ ") + (/pm/i.test(s) ? "রাত " : "সকাল ") + bn(h) + "টায়";
+            var h = (s.match(/(\d+):\d{2}/) || [0, 9])[1];
+            var dm = s.match(/^[A-Z][a-z]{2} (\d+) /);
+            return (/tomorrow/i.test(s) ? "কাল " : dm ? bn(dm[1]) + " তারিখ " : "আজ ") + (/pm/i.test(s) ? "রাত " : "সকাল ") + bn(h) + "টায়";
           }
           var WAKE = new RegExp(N("^((hey|hi|ok|okay|হেই|হে|ওকে)\\s*)?(jarvis|jervis|javis|জার্ভিস|জারভিস)\\s*"));
           /* Returns the Bengali reply to speak and the toasts to show */
@@ -2855,11 +3000,15 @@ tr.is-highlight > :last-child { box-shadow: 12px 0 var(--fill-tertiary); }
               return { say: r, list: [r, PREVIEW] };
             }
             if (has(/\b(status|report|update|ki obostha|kemon cholche)\b|স্ট্যাটাস|রিপোর্ট|(কী|কি) অবস্থা|কেমন চলছে/)) {
-              var on = $("#ai-master").getAttribute("aria-checked") === "true";
+              var on = LIVE ? (String(LIVE.automation).toLowerCase() === "on" || LIVE.automation === true) : $("#ai-master").getAttribute("aria-checked") === "true";
               var conn = accts.filter(function (a) { return a.on; }).length;
-              var wk = ($("#scan-card .x-quota p").textContent.match(/(\d+)\s*\/\s*(\d+)/) || [0, 0, 3]);
+              var wk = LIVE && LIVE.week ? [0, +LIVE.week.made || 0, +LIVE.week.cap || 3] : ($("#scan-card .x-quota p").textContent.match(/(\d+)\s*\/\s*(\d+)/) || [0, 0, 3]);
               var s = ofN(accts.length) + " মধ্যে " + cnt(conn) + " অ্যাকাউন্ট কানেক্টেড, এই সপ্তাহে " + bn(wk[1]) + "/" + bn(wk[2]) +
                 " ভিডিও, অটোমেশন " + (on ? "চালু" : "বন্ধ") + ", পরের স্ক্যান " + nextBn();
+              if (LIVE) {
+                var cs = (LIVE.current || {}).state;
+                s += ", এখন " + (cs === "running" ? "চলছে" + (LIVE.current.step ? " — " + LIVE.current.step : "") : cs === "error" ? "একটা সমস্যা হয়েছে" : "অপেক্ষায়");
+              } else s += " (ডেমো)";
               return { say: s, list: [s] };
             }
             if (has(/বন্ধ|\b(off|bondho|bondo|bandho|bando|band koro)\b/) || (autoWord && has(/\b(pause|stop)\b|থামাও/))) {
