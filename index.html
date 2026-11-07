@@ -954,6 +954,14 @@ tr.is-highlight > :last-child { box-shadow: 12px 0 var(--fill-tertiary); }
       .x-composer .x-opts { flex-wrap: nowrap; overflow-x: auto; scrollbar-width: none; }
       .x-composer .x-opt { flex: none; }
       .x-send { display: flex; gap: 8px; }
+      .x-cm { padding: 12px 0; border-top: 1px solid var(--stroke-primary); list-style: none; }
+      .x-cm:first-child { border-top: 0; }
+      .x-cm-top { display: flex; gap: 8px; align-items: baseline; flex-wrap: wrap; font: var(--type-small); color: var(--text-secondary); }
+      .x-cm-top b { color: var(--text-primary); }
+      .x-cm-text { margin: 4px 0 8px; font: var(--type-body); white-space: pre-wrap; word-break: break-word; }
+      .x-cm-reply { margin: 0 0 8px; padding: 8px 12px; border-radius: var(--r-s); background: var(--fill-primary-on); font: var(--type-small); }
+      .x-cm-form { display: flex; gap: 8px; }
+      .x-cm-ok { font: var(--type-small); color: var(--text-secondary); margin: 6px 0 0; }
       .x-input { flex: 1; min-width: 0; min-height: var(--tap); padding: 0 16px; border: 1px solid var(--stroke-primary); border-radius: var(--r-pill); background: var(--fill-primary-on); color: var(--text-primary); font: var(--type-body); }
       .x-send .btn { border-radius: var(--r-pill); min-height: var(--tap); padding-inline: 18px; }
 
@@ -1189,6 +1197,12 @@ tr.is-highlight > :last-child { box-shadow: 12px 0 var(--fill-tertiary); }
             <div class="x-card-top"><h3>My Rumble videos</h3><span class="chip" id="mv-count">—</span></div>
             <ul class="x-rows" id="mv-list" hidden></ul>
             <p class="x-empty" id="mv-empty">No data yet — fills in after the next automation run</p>
+          </div>
+          <div class="x-card" id="comments">
+            <div class="x-card-top"><h3>Comments · Rumble</h3><span class="chip" id="cm-count">—</span></div>
+            <p class="x-sub" id="cm-sub">Synced every hour from Rumble. Replies post within the hour.</p>
+            <ul class="x-rows" id="cm-list" style="padding:0" hidden></ul>
+            <p class="x-empty" id="cm-empty">No comments yet — fills in after the next hourly sync</p>
           </div>
           <div class="x-card" id="calc">
             <h3>Earning calculator · Rumble</h3>
@@ -1865,11 +1879,49 @@ tr.is-highlight > :last-child { box-shadow: 12px 0 var(--fill-tertiary); }
             return '<li><span class="x-grow">' + t + (x.date ? "<small>" + esc(x.date) + "</small>" : "") + '</span><span class="x-val">' + (x.views !== undefined && x.views !== null ? esc(fmtNum(x.views)) + " views" : "") + "</span></li>";
           }).join("");
           $("#mv-list").hidden = !v.length; $("#mv-empty").hidden = !!v.length;
-          $("#mv-count").textContent = v.length ? v.length + " videos" : "—";
           var r = d && d.stats && d.stats.rumble;
+          $("#mv-count").textContent = v.length ? v.length + " videos" + (r && r.as_of ? " · updated " + r.as_of : "") : "—";
+          renderComments(d);
           MYVIEWS = r && typeof r.views === "number" ? r.views : v.reduce(function (a, x) { return a + (+x.views || 0); }, 0);
           var inp = $("#ec-views"); if (!inp.dataset.touched) { inp.value = MYVIEWS; calc(); }
         }
+        /* Comments from status.json; replies go through sendCmd and post at the next hourly sync */
+        var CM_SENT = {}; try { CM_SENT = JSON.parse(localStorage.getItem("sg-cm-sent") || "{}") || {}; } catch (e) {}
+        var CM_ITEMS = [];
+        function renderComments(d) {
+          var c = d && Array.isArray(d.comments) ? d.comments.filter(function (x) { return x && x.text; }) : [];
+          c = c.map(function (x, i) { return { x: x, i: i, t: parseIST(x.time) || new Date(x.time || 0) }; })
+            .sort(function (a, b) { var ta = +a.t || 0, tb = +b.t || 0; return tb - ta || b.i - a.i; }).map(function (o) { return o.x; });
+          var list = $("#cm-list"), open = {};
+          $$("#cm-list .x-cm").forEach(function (li) { var inp = li.querySelector("input"); if (inp && inp.value) open[li.dataset.id] = inp.value; });
+          CM_ITEMS = c;
+          list.innerHTML = c.map(function (x, i) {
+            var id = String(x.id || i), sent = CM_SENT[id] && !x.replied;
+            var vt = x.video_url ? '<a href="' + esc(x.video_url) + '" target="_blank" rel="noopener">' + esc(x.video_title || "Video") + "</a>" : esc(x.video_title || "");
+            return '<li class="x-cm" data-id="' + esc(id) + '" data-i="' + i + '"><div class="x-cm-top"><b>' + esc(x.author || "Viewer") + "</b>" + (x.time ? "<span>" + esc(x.time) + "</span>" : "") + (vt ? "<span>on " + vt + "</span>" : "") + "</div>" +
+              '<p class="x-cm-text">' + esc(x.text) + "</p>" +
+              (x.replied && x.reply ? '<p class="x-cm-reply"><b>You:</b> ' + esc(x.reply) + "</p>" : "") +
+              (x.replied ? "" : '<form class="x-cm-form"><input class="x-input" type="text" maxlength="1000" placeholder="Write a reply" aria-label="Reply to ' + esc(x.author || "comment") + '" autocomplete="off"><button class="btn x-primary" type="submit">Send</button></form>' +
+                '<p class="x-cm-ok"' + (sent ? "" : " hidden") + ">Reply sent, posts within the hour</p>") + "</li>";
+          }).join("");
+          $$("#cm-list .x-cm").forEach(function (li) { var inp = li.querySelector("input"); if (inp && open[li.dataset.id]) inp.value = open[li.dataset.id]; });
+          list.hidden = !c.length; $("#cm-empty").hidden = !!c.length;
+          var newc = c.filter(function (x) { return !x.replied; }).length;
+          $("#cm-count").textContent = c.length ? c.length + " comments" + (newc ? " · " + newc + " to reply" : "") : "—";
+          var r = d && d.stats && d.stats.rumble;
+          $("#cm-sub").textContent = "Synced every hour from Rumble" + (r && r.as_of ? " · updated " + r.as_of : "") + ". Replies post within the hour.";
+        }
+        $("#cm-list").addEventListener("submit", function (e) {
+          e.preventDefault();
+          var f = e.target, li = f.closest(".x-cm"), x = CM_ITEMS[+li.dataset.i], inp = f.querySelector("input"), txt = inp.value.trim();
+          if (!x || !txt) { toast("Write a reply first"); return; }
+          var btn = f.querySelector("button"); btn.disabled = true;
+          sendCmd("REPLY_COMMENT " + JSON.stringify({ id: x.id, video_url: x.video_url, author: x.author, text: txt })).then(function (ok) {
+            btn.disabled = false;
+            if (ok) { inp.value = ""; CM_SENT[li.dataset.id] = 1; try { localStorage.setItem("sg-cm-sent", JSON.stringify(CM_SENT)); } catch (e2) {} li.querySelector(".x-cm-ok").hidden = false; toast("Reply sent, posts within the hour"); }
+            else toast("Not sent, check internet");
+          });
+        });
         function calc() {
           var views = Math.max(0, +$("#ec-views").value || 0), rpm = +$("#ec-rpm").value || 0;
           var usd = views / 1000 * rpm, rate = (LIVE && LIVE.usd_inr) || 88;
