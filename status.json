@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-07 13:03 IST",
+ "updated": "2026-11-07 13:24 IST",
  "automation": "on",
  "next_scan": "2026-11-07 09:00 IST",
  "week": {
@@ -8,13 +8,13 @@
  },
  "current": {
   "state": "running",
-  "step": "Scanning news",
-  "stage": 0,
+  "step": "Uploading to Rumble",
+  "stage": 4,
   "stage_times": [
-   "",
-   "",
-   "",
-   "",
+   "1:12 PM",
+   "1:14 PM",
+   "1:20 PM",
+   "1:24 PM",
    "",
    ""
   ]
