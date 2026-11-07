@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-06 20:35 IST",
+ "updated": "2026-11-07 13:03 IST",
  "automation": "on",
  "next_scan": "2026-11-07 09:00 IST",
  "week": {
@@ -7,19 +7,26 @@
   "cap": 7
  },
  "current": {
-  "state": "idle",
-  "step": "Today's video is live. Next: Sat 7 Nov scan at 9:00 AM IST",
-  "stage": 6,
+  "state": "running",
+  "step": "Scanning news",
+  "stage": 0,
   "stage_times": [
-   "8:01 PM",
    "",
    "",
    "",
    "",
-   "8:23 PM"
+   "",
+   ""
   ]
  },
  "runs": [
+  {
+   "time": "2026-11-07 09:00 IST",
+   "result": "skipped",
+   "topic": "-",
+   "why": "Daily usage 98%",
+   "note": "Light scan only, no build"
+  },
   {
    "time": "2026-11-06 20:23 IST",
    "result": "video",
@@ -81,5 +88,5 @@
    "title": "Evening scan: extra video only with your yes"
   }
  ],
- "next_upload": "Sat 7 Nov, best US time (picked at 9 AM scan)"
+ "next_upload": "Sat 7 Nov: building now, will schedule at best US time"
 }
