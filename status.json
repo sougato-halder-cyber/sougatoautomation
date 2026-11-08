@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-07 13:28 IST",
+ "updated": "2026-11-08 13:40 IST",
  "automation": "on",
  "next_scan": "2026-11-07 21:00 IST",
  "week": {
@@ -48,49 +48,49 @@
  ],
  "stats": {
   "rumble": {
-   "views": 26,
+   "views": 38,
    "followers": 2,
    "earnings": "Not yet",
    "videos": 6,
-   "as_of": "7 Nov 2026, 1:22 PM IST"
+   "as_of": "8 Nov 2026, 1:40 PM IST"
   }
  },
  "videos": [
   {
    "title": "Did the Stock Market Just Crash? What the Democratic Sweep Means for Your Money, Crypto & 401(k)",
-   "url": "https://rumble.com/v7hzopq-did-the-stock-market-just-crash-what-the-democratic-sweep-means-for-your-mo.html",
-   "views": 0,
-   "date": "7 Nov 2026 (scheduled 9:30 PM IST)"
-  },
-  {
-   "title": "Bitcoin & Stocks Crash: AI Selloff, $1.26B Liquidated, and a December Rate Hike?",
-   "url": "https://rumble.com/v7hycsk-bitcoin-and-stocks-crash-ai-selloff-1.26b-liquidated-and-a-december-rate-hi.html",
-   "views": 7,
-   "date": "6 Nov 2026"
+   "url": "https://rumble.com/v7hzri0-did-the-stock-market-just-crash-what-the-democratic-sweep-means-for-your-mo.html",
+   "views": 8,
+   "date": "2026-11-07"
   },
   {
    "title": "How to Turn $500 a Month into $1 Million (The Realistic Plan)",
    "url": "https://rumble.com/v7hwpz8-how-to-turn-500-a-month-into-1-million-the-realistic-plan.html",
-   "views": 0,
-   "date": "5 Nov 2026"
+   "views": 2,
+   "date": "2026-11-06"
+  },
+  {
+   "title": "Bitcoin & Stocks Crash: AI Selloff, $1.26B Liquidated, and a December Rate Hike?",
+   "url": "https://rumble.com/v7hycsk-bitcoin-and-stocks-crash-ai-selloff-1.26b-liquidated-and-a-december-rate-hi.html",
+   "views": 9,
+   "date": "2026-11-06"
   },
   {
    "title": "5 Beginner Money Mistakes That Will RAM Your Savings To Zero!",
    "url": "https://rumble.com/v7hwkmw-5-beginner-money-mistakes-that-will-ram-your-savings-to-zero.html",
    "views": 10,
-   "date": "5 Nov 2026"
+   "date": "2026-11-06"
   },
   {
-   "title": "Islamicvlog (Short)",
-   "url": "https://rumble.com/shorts/v7hv3j6",
-   "views": 6,
-   "date": "4 Nov 2026"
-  },
-  {
-   "title": "Islamicvlog (Short)",
+   "title": "Islamicvlog #Islamicvlog #youtubeshorts #islam",
    "url": "https://rumble.com/shorts/v7hv3zc",
    "views": 3,
-   "date": "4 Nov 2026"
+   "date": "2026-11-05"
+  },
+  {
+   "title": "Islamicvlog #Islamicvlog #youtubeshorts #islam",
+   "url": "https://rumble.com/shorts/v7hv3j6",
+   "views": 6,
+   "date": "2026-11-05"
   }
  ],
  "schedule": [
@@ -113,5 +113,28 @@
    "title": "October CPI (Tue): will the Fed hike?",
    "why": "Rate-hike videos pulling 295K views"
   }
- ]
+ ],
+ "comments": [
+  {
+   "id": "Ayobami_1-1",
+   "video_title": "Bitcoin & Stocks Crash: AI Selloff, $1.26B Liquidated, and a December Rate Hike?",
+   "video_url": "https://rumble.com/v7hycsk-bitcoin-and-stocks-crash-ai-selloff-1.26b-liquidated-and-a-december-rate-hi.html",
+   "author": "Ayobami_1",
+   "text": "Hi how are you I recently watched two of your videos... collaborate... Telegram: @Ayobami_pro",
+   "time": "2026-11-06 17:10 IST",
+   "replied": false,
+   "reply": ""
+  },
+  {
+   "id": "somto0010-1",
+   "video_title": "5 Beginner Money Mistakes That Will RAM Your Savings To Zero!",
+   "video_url": "https://rumble.com/v7hwkmw-5-beginner-money-mistakes-that-will-ram-your-savings-to-zero.html",
+   "author": "somto0010",
+   "text": "Hello sougatohalder I came across your channel... real, organic promotion... Contact me by email",
+   "time": "2026-11-05 16:46 IST",
+   "replied": false,
+   "reply": ""
+  }
+ ],
+ "last_reply_ts": 0
 }
