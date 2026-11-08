@@ -1129,6 +1129,13 @@ tr.is-highlight > :last-child { box-shadow: 12px 0 var(--fill-tertiary); }
       .x-lk-offer { display: grid; justify-items: center; gap: 12px; }
       .x-lk-offer[hidden] { display: none; }
       @media (prefers-reduced-motion: reduce) { .x-fp::before, .x-fp.is-scan .x-fp-print, .x-dots.is-shake { animation: none; } .x-lock { transition: none; } }
+      .x-yt-card .x-ytm { display: grid; grid-template-columns: repeat(2, minmax(0,1fr)); gap: 10px; margin: 12px 0; }
+      .x-yt-card .x-ytm div { padding: 12px; border-radius: var(--r-s); background: var(--fill-primary-on); }
+      .x-yt-card .x-ytm b { display: block; font: var(--type-heading); font-variant-numeric: tabular-nums; }
+      .x-yt-card .x-ytm span { font-size: .85em; opacity: .75; }
+      .x-yt-card .x-quota { margin: 10px 0; }
+      .x-yt-card .x-bar i { background: #ff3b30; }
+      .x-yt-card .x-ytact { display: grid; gap: 8px; margin-top: 12px; }
     </style>
   </head>
   <body>
@@ -1169,7 +1176,7 @@ tr.is-highlight > :last-child { box-shadow: 12px 0 var(--fill-tertiary); }
       <main class="main">
         <!-- HOME -->
         <section class="x-panel" id="home" role="tabpanel" aria-labelledby="t-home">
-          <div class="x-head"><div><h1>Hi Sougato</h1><p>1 of 6 connected</p></div></div>
+          <div class="x-head"><div><h1>Hi Sougato</h1><p>2 of 6 connected</p></div></div>
           <div class="x-card" id="live-card" aria-live="polite">
             <div class="x-card-top">
               <h3>Live Automation</h3>
@@ -1204,6 +1211,34 @@ tr.is-highlight > :last-child { box-shadow: 12px 0 var(--fill-tertiary); }
             <ul class="x-rows" id="cm-list" style="padding:0" hidden></ul>
             <p class="x-empty" id="cm-empty">No comments yet — fills in after the next hourly sync</p>
           </div>
+          <div class="x-card x-yt-card" id="yt-card">
+            <div class="x-card-top"><h3>YouTube · Lost Ages Animated</h3><span class="chip" id="yt-chip">—</span></div>
+            <p class="x-sub" id="yt-sub"><a href="https://www.youtube.com/@LostAgesAnimatedTV" target="_blank" rel="noopener">@LostAgesAnimatedTV</a> · read from YouTube Studio by the automation runs, not live</p>
+            <div class="x-ytm">
+              <div><b id="yt-subs">—</b><span>Subscribers</span></div>
+              <div><b id="yt-views">—</b><span>Total views</span></div>
+              <div><b id="yt-hours">—</b><span>Watch hours (all)</span></div>
+              <div><b id="yt-vids">—</b><span>Videos</span></div>
+            </div>
+            <p class="x-lbl">Monetization (YouTube Partner Program)</p>
+            <div class="x-quota">
+              <p>Subscribers: <span id="yt-subs-q">— / 1,000</span></p>
+              <div class="x-bar" role="progressbar" aria-label="Subscribers toward 1,000" aria-valuemin="0" aria-valuemax="1000" aria-valuenow="0" id="yt-subs-bar"><i style="width: 0%"></i></div>
+              <p>Public watch hours (365 days): <span id="yt-hours-q">— / 4,000</span></p>
+              <div class="x-bar" role="progressbar" aria-label="Watch hours toward 4,000" aria-valuemin="0" aria-valuemax="4000" aria-valuenow="0" id="yt-hours-bar"><i style="width: 0%"></i></div>
+              <p class="fineprint" id="yt-mon-note"></p>
+            </div>
+            <ul class="x-rows">
+              <li><span class="x-grow">Latest video<small id="yt-latest-t">—</small></span><span class="x-val" id="yt-latest-s">—</span></li>
+              <li><span class="x-grow">Next scheduled<small id="yt-next-t">—</small></span><span class="x-val" id="yt-next-s">—</span></li>
+            </ul>
+            <div class="x-ytact">
+              <button class="x-switch" role="switch" aria-checked="true" id="yt-auto"><span class="x-grow">YouTube auto<small>Off = no YouTube video is built or published from the next run</small></span></button>
+              <button class="btn x-primary" type="button" id="yt-approve" disabled>Approve upload</button>
+              <p class="fineprint" id="yt-approve-note">Nothing waiting for your OK right now.</p>
+            </div>
+            <p class="fineprint" id="yt-asof"></p>
+          </div>
           <div class="x-card" id="calc">
             <h3>Earning calculator · Rumble</h3>
             <p class="x-sub">Estimate only. Rumble has no fixed rate; public 2026 guides put it around $2–$10 per 1,000 views, often lower for small new channels.</p>
@@ -1231,7 +1266,7 @@ tr.is-highlight > :last-child { box-shadow: 12px 0 var(--fill-tertiary); }
               <p class="fineprint">Auto-publish is on. Deletes always ask you first.</p>
             </aside>
             <div class="x-card">
-              <div class="x-card-top"><h3>Accounts</h3><span class="pill">1 of 6 connected</span></div>
+              <div class="x-card-top"><h3>Accounts</h3><span class="pill">2 of 6 connected</span></div>
               <ul class="x-rows" id="home-accts"></ul>
             </div>
           </div>
@@ -1322,7 +1357,7 @@ tr.is-highlight > :last-child { box-shadow: 12px 0 var(--fill-tertiary); }
             <h3>Per platform</h3>
             <div class="x-psws">
               <button class="x-switch" role="switch" aria-checked="true"><span><span class="x-plat x-ru">Rumble</span><small>Connected</small></span></button>
-              <button class="x-switch" role="switch" aria-checked="false" disabled><span><span class="x-plat x-yt">YouTube</span><small>Not connected</small></span></button>
+              <button class="x-switch" role="switch" aria-checked="false" disabled><span><span class="x-plat x-yt">YouTube</span><small>Connected · on/off in the YouTube card</small></span></button>
               <button class="x-switch" role="switch" aria-checked="false" disabled><span><span class="x-plat x-ig">Instagram 1</span><small>Not connected</small></span></button>
               <button class="x-switch" role="switch" aria-checked="false" disabled><span><span class="x-plat x-ig">Instagram 2</span><small>Not connected</small></span></button>
               <button class="x-switch" role="switch" aria-checked="false" disabled><span><span class="x-plat x-fb">Facebook 1</span><small>Not connected</small></span></button>
@@ -1334,7 +1369,7 @@ tr.is-highlight > :last-child { box-shadow: 12px 0 var(--fill-tertiary); }
 
         <!-- CHANNELS -->
         <section class="x-panel" id="channels" role="tabpanel" aria-labelledby="t-channels" hidden>
-          <div class="x-head"><div><h2>Channels</h2><p>1 of 6 connected</p></div><button class="btn x-primary" id="add-acct">+ Add account</button></div>
+          <div class="x-head"><div><h2>Channels</h2><p>2 of 6 connected</p></div><button class="btn x-primary" id="add-acct">+ Add account</button></div>
           <div class="x-list" id="acct-list"></div>
           <div class="x-card">
             <h3>This device</h3>
@@ -1976,6 +2011,42 @@ tr.is-highlight > :last-child { box-shadow: 12px 0 var(--fill-tertiary); }
         }
         tick(); setInterval(tick, 30000);
 
+        /* YouTube (status.json "youtube", written by the automation runs) */
+        function renderYT(d) {
+          var y = d && d.youtube; if (!y) { $("#yt-chip").textContent = "Waiting for data"; return; }
+          var num = function (v) { return v === undefined || v === null || v === "" ? "—" : fmtNum(v); };
+          $("#yt-chip").textContent = "Connected"; $("#yt-chip").className = "chip chip--solid";
+          $("#yt-subs").textContent = num(y.subscribers);
+          $("#yt-views").textContent = num(y.views);
+          $("#yt-hours").textContent = num(y.watch_hours);
+          $("#yt-vids").textContent = num(y.video_count);
+          var m = y.monetization || {}, sg = +m.subs_goal || 1000, hg = +m.hours_goal || 4000;
+          var sv = +y.subscribers || 0, hv = +m.public_watch_hours || 0;
+          $("#yt-subs-q").textContent = fmtNum(sv) + " / " + fmtNum(sg);
+          $("#yt-hours-q").textContent = fmtNum(hv) + " / " + fmtNum(hg);
+          var sb = $("#yt-subs-bar"); sb.setAttribute("aria-valuenow", sv); sb.querySelector("i").style.width = Math.max(sv > 0 ? 1 : 0, Math.min(100, sv / sg * 100)) + "%";
+          var hb = $("#yt-hours-bar"); hb.setAttribute("aria-valuenow", hv); hb.querySelector("i").style.width = Math.max(hv > 0 ? 1 : 0, Math.min(100, hv / hg * 100)) + "%";
+          $("#yt-mon-note").textContent = m.note || "";
+          var L = y.latest;
+          $("#yt-latest-t").innerHTML = L ? (L.url ? '<a href="' + esc(L.url) + '" target="_blank" rel="noopener">' + esc(L.title) + "</a>" : esc(L.title)) : "No video yet";
+          $("#yt-latest-s").textContent = L ? (L.status || "") + (L.views != null ? " · " + fmtNum(L.views) + " views" : "") : "—";
+          var N = y.next_scheduled;
+          $("#yt-next-t").textContent = N ? N.title : "Nothing scheduled";
+          $("#yt-next-s").textContent = N ? N.when : "—";
+          var P = y.pending_approval, ab = $("#yt-approve");
+          ab.disabled = !P || !P.id;
+          ab.dataset.vid = P && P.id ? P.id : "";
+          ab.textContent = P && P.id ? "Approve upload" : "Approve upload";
+          $("#yt-approve-note").textContent = P && P.id ? "Waiting for your OK: " + P.title + (P.plan ? " · " + P.plan : "") : "Nothing waiting for your OK right now.";
+          $("#yt-asof").textContent = y.as_of ? "YouTube data as of " + y.as_of : "";
+        }
+        $("#yt-approve").addEventListener("click", function () {
+          var id = this.dataset.vid; if (!id) return;
+          var t = (LIVE && LIVE.youtube && LIVE.youtube.pending_approval && LIVE.youtube.pending_approval.title) || id;
+          if (!confirm("Approve this YouTube upload?\n" + t)) return;
+          var b = this; b.disabled = true;
+          sendCmd("YT_APPROVE_UPLOAD " + id).then(function (ok) { toast(ok ? "Approved · it goes public at the next check (within 3 hours)" : "Not sent, check internet"); if (!ok) b.disabled = false; else $("#yt-approve-note").textContent = "Approved · waiting for the next check"; });
+        });
         /* Live Automation: status.json, on load and every 60 s */
         (function () {
           var RES = { video: "Video published", skipped: "Skipped", error: "Error" };
@@ -2010,6 +2081,7 @@ tr.is-highlight > :last-child { box-shadow: 12px 0 var(--fill-tertiary); }
             setMaster("ai-master" in SET.sw ? !!SET.sw["ai-master"] : on);
             applySet();
             renderData(d);
+            try { renderYT(d); } catch (e) {}
             var STG = ["Scan news", "Script", "Voice", "Make video", "Upload to Rumble", "Live"];
             var sg = typeof cur.stage === "number" ? cur.stage : (state === "running" ? 0 : -1), tm = cur.stage_times || [];
             $("#lv-track").innerHTML = sg < 0 ? "" : STG.map(function (n, i) {
@@ -2062,7 +2134,7 @@ tr.is-highlight > :last-child { box-shadow: 12px 0 var(--fill-tertiary); }
         /* Channels */
         var accts = [
           { id: "rumble", name: "Rumble", handle: "@sougatohalder", av: "R", cls: "x-ru", on: true },
-          { id: "yt", name: "YouTube", handle: "Connect via Hark chat", av: "YT", cls: "x-yt" },
+          { id: "yt", name: "YouTube", handle: "@LostAgesAnimatedTV · Lost Ages Animated", av: "YT", cls: "x-yt", on: true },
           { id: "ig1", name: "Instagram 1", handle: "Connect via Hark chat", av: "IG", cls: "x-ig" },
           { id: "ig2", name: "Instagram 2", handle: "Connect via Hark chat", av: "IG", cls: "x-ig" },
           { id: "fb1", name: "Facebook 1", handle: "Connect via Hark chat", av: "f", cls: "x-fb" },
@@ -2078,7 +2150,7 @@ tr.is-highlight > :last-child { box-shadow: 12px 0 var(--fill-tertiary); }
         function renderAccts() {
           var n = liveVideos();
           $("#acct-list").innerHTML = accts.map(function (a, i) {
-            return '<div class="x-acct-wrap"><button class="x-acct" data-acct="' + i + '"><span class="x-av ' + a.cls + '">' + a.av + '</span><span style="flex:1;min-width:0"><b>' + esc(a.name) + '</b><small>' + esc(a.handle) + (a.on && n !== null ? " · " + esc(fmtNum(n)) + " videos" : "") + '</small></span>' + chipFor(a) + "</button></div>";
+            return '<div class="x-acct-wrap"><button class="x-acct" data-acct="' + i + '"><span class="x-av ' + a.cls + '">' + a.av + '</span><span style="flex:1;min-width:0"><b>' + esc(a.name) + '</b><small>' + esc(a.handle) + (a.on && a.id === "rumble" && n !== null ? " · " + esc(fmtNum(n)) + " videos" : "") + '</small></span>' + chipFor(a) + "</button></div>";
           }).join("");
           $("#home-accts").innerHTML = accts.map(function (a) {
             return '<li><span class="x-av ' + a.cls + '">' + a.av + '</span><span class="x-grow">' + esc(a.name) + "<small>" + esc(a.handle) + "</small></span>" + chipFor(a) + "</li>";
@@ -2089,7 +2161,7 @@ tr.is-highlight > :last-child { box-shadow: 12px 0 var(--fill-tertiary); }
         var cur = null, sheet = $("#sheet");
         function renderVideos() {
           var a = cur, n = liveVideos();
-          var lv = a.on && LIVE && Array.isArray(LIVE.videos) ? LIVE.videos : [];
+          var lv = a.id === "yt" ? (LIVE && LIVE.youtube && Array.isArray(LIVE.youtube.videos) ? LIVE.youtube.videos : []) : a.on && LIVE && Array.isArray(LIVE.videos) ? LIVE.videos : [];
           $("#sh-videos").innerHTML = lv.length ? lv.map(function (x) { return '<li><span class="x-grow">' + (x.url ? '<a href="' + esc(x.url) + '" target="_blank" rel="noopener">' + esc(x.title) + "</a>" : esc(x.title)) + '</span><span class="x-val">' + (x.views != null ? esc(fmtNum(x.views)) + " views" : "") + "</span></li>"; }).join("") : '<li><span class="x-grow sub">' + (a.on ? (n !== null ? esc(fmtNum(n)) + " videos live." : EMPTY) : "Not connected · connect via Hark chat.") + "</span></li>";
         }
         function openSheet(a) {
@@ -2097,7 +2169,7 @@ tr.is-highlight > :last-child { box-shadow: 12px 0 var(--fill-tertiary); }
           var av = $("#sh-av"); av.className = "x-av " + a.cls; av.textContent = a.av;
           $("#sh-title").textContent = a.name; $("#sh-handle").textContent = a.handle;
           var st = $("#sh-status"); st.textContent = a.on ? "Connected" : "Not connected"; st.className = "chip" + (a.on ? " chip--solid" : "");
-          $("#sh-niche").textContent = "Crypto & finance, US";
+          $("#sh-niche").textContent = a.id === "yt" ? "Ancient story-docs, US" : "Crypto & finance, US";
           $("#sh-auto").setAttribute("aria-checked", a.auto);
           syncAuto();
           $("#st-val").textContent = a.perWeek;

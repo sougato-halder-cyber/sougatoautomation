@@ -1,5 +1,5 @@
 {
- "updated": "2026-11-08 17:35 IST",
+ "updated": "2026-11-08 18:10 IST",
  "automation": "on",
  "next_scan": "2026-11-07 21:00 IST",
  "week": {
@@ -142,5 +142,71 @@
    "reply": ""
   }
  ],
- "last_reply_ts": 0
+ "last_reply_ts": 0,
+ "youtube": {
+  "channel": "Lost Ages Animated",
+  "handle": "@LostAgesAnimatedTV",
+  "channel_id": "UCMoX_pUbCKPm7dY_I8_JYUg",
+  "url": "https://www.youtube.com/@LostAgesAnimatedTV",
+  "subscribers": 3,
+  "views": "1.3K",
+  "watch_hours": 5.8,
+  "video_count": 6,
+  "monetization": {
+   "subs_goal": 1000,
+   "hours_goal": 4000,
+   "public_watch_hours": 0,
+   "note": "Studio Earn page: 0 qualified public watch hours (last 365 days), data as of 3 Nov 2026. The 5.8 h so far came from Shorts, which don't count."
+  },
+  "latest": {
+   "title": "Could You Survive One Week as a Caveman?",
+   "id": "SffpCJTcKSs",
+   "url": "https://www.youtube.com/watch?v=SffpCJTcKSs",
+   "status": "Private (stopped, remake with your clips)",
+   "views": 0,
+   "date": "2026-11-08"
+  },
+  "next_scheduled": null,
+  "pending_approval": null,
+  "videos": [
+   {
+    "title": "Could You Survive One Week as a Caveman? (Private)",
+    "url": "https://www.youtube.com/watch?v=SffpCJTcKSs",
+    "views": 0,
+    "date": "2026-11-08"
+   },
+   {
+    "title": "Islamicvlog (Short, Unlisted)",
+    "url": "https://www.youtube.com/shorts/1K2c7b89Qog",
+    "views": 0,
+    "date": "2026-11-05"
+   },
+   {
+    "title": "Big & Small Monster Moon Cars vs Giant Nokia Hammer #5 (Short, Unlisted)",
+    "url": "https://www.youtube.com/shorts/CI2pZi8x61M",
+    "views": 0,
+    "date": "2026-11-04"
+   },
+   {
+    "title": "Big & Small Monster Moon Cars vs Giant Nokia Hammer #2 (Short, Unlisted)",
+    "url": "https://www.youtube.com/shorts/M6Ztj8gtiMc",
+    "views": 0,
+    "date": "2026-11-04"
+   },
+   {
+    "title": "Big & Small Monster Moon Cars vs Giant Hand Slap #1 (Short, Unlisted)",
+    "url": "https://www.youtube.com/shorts/7V2tO2dTnSQ",
+    "views": 0,
+    "date": "2026-11-04"
+   },
+   {
+    "title": "Big & Small Monster Moon Cars vs Giant Nokia Hammer #1 (Short, Unlisted)",
+    "url": "https://www.youtube.com/shorts/LXRJ2yteHCU",
+    "views": 1399,
+    "date": "2026-11-04"
+   }
+  ],
+  "as_of": "8 Nov 2026, 6:10 PM IST",
+  "last_cmd_ts": 0
+ }
 }
